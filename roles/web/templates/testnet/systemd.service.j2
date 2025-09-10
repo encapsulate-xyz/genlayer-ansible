@@ -1,0 +1,17 @@
+[Unit]
+Description={{ service_identifier }}
+
+[Service]
+User={{ service_identifier }}
+Group={{ project }}
+WorkingDirectory={{ web_home_dir }}
+ExecStart={{ web_bin_dir }}/{{ service_identifier }} web --config {{ web_config_file_path }}
+Restart=always
+RestartSec=4
+LimitNOFILE=65536
+MemoryMax=64G
+StandardOutput=append:{{ web_log_file_path }}
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

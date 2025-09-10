@@ -1,0 +1,8 @@
+---
+# maintains file name, binary names, and anything which is not a directory or path
+
+# config file names
+web_config_file_name: genvm-module-web.yaml
+
+# binary names
+web_service_default_binary_name: genvm-modules
