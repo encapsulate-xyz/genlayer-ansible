@@ -1,0 +1,39 @@
+---
+- name: Create docker container and copy jar file
+  vars:
+    container_name: "{{ service_identifier }}"
+  block:
+    - name: Create temporary webdriver container for binary extraction
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ genlayer.webdriver.source_url }}:{{ genlayer.webdriver.version }}"
+        state: present
+        recreate: true
+
+    - name: Copy jar file
+      ansible.builtin.shell: >
+        docker cp {{ container_name }}:/wd/{{ webdriver_service_default_jar_file_name }} {{ webdriver_bin_dir }}/{{ service_identifier }}
+      args:
+        executable: /bin/bash
+      register: copy_result
+      changed_when: copy_result.rc == 0
+      failed_when:
+        - copy_result.rc != 0
+        - "'No such container' in copy_result.stderr"
+      notify:
+        - Restart service
+
+    - name: Ensure jar file has the correct permissions
+      ansible.builtin.file:
+        path: "{{ webdriver_bin_dir }}/{{ service_identifier }}"
+        owner: root
+        group: root
+        mode: "0755"
+      notify:
+        - Restart service
+
+  always:
+    - name: Remove webdriver container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: absent

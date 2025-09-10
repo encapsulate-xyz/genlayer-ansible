@@ -1,0 +1,18 @@
+[Unit]
+Description={{ service_identifier }}
+
+[Service]
+User={{ service_identifier }}
+Group={{ project }}
+WorkingDirectory={{ webdriver_home_dir }}
+ExecStart=java -jar {{ webdriver_bin_dir }}/{{ service_identifier }} standalone -I firefox \
+--port {{ genlayer.webdriver.ports.listen_port }} --host 0.0.0.0
+Restart=always
+RestartSec=4
+LimitNOFILE=65536
+MemoryMax=64G
+StandardOutput=append:{{ webdriver_log_file_path }}
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target
