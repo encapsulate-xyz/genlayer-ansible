@@ -1,0 +1,12 @@
+---
+# maintains file name, binary names, and anything which is not a directory or path
+
+# config file names
+llm_config_file_name: genvm-module-llm.yaml
+llm_lua_script_file_name: genvm-greyboxing.lua
+
+# binary names
+llm_service_default_binary_name: genvm-modules
+
+# Environment file names
+llm_environment_general_file_name: "{{ service_identifier }}.env"

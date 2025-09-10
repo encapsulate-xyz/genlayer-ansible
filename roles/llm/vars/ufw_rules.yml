@@ -1,0 +1,7 @@
+---
+llm_ufw_rules:
+  - port: "{{ genlayer.llm.ports.listen_port }}"
+    proto: tcp
+    rule: allow
+    from: any
+    comment: listen_port
