@@ -19,7 +19,7 @@
 
 - name: Copy genvm configuration file
   ansible.builtin.template:
-    src: "{{ env }}/genvm-module-llm.yaml.j2"
+    src: "{{ env }}/genvm_module_llm.yaml.j2"
     dest: "{{ llm_config_file_path }}"
     owner: "{{ service_identifier }}"
     group: "{{ service_identifier }}"

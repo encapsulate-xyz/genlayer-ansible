@@ -19,7 +19,7 @@
 
 - name: Copy genvm web configuration file
   ansible.builtin.template:
-    src: "{{ env }}/genvm-module-web.yaml.j2"
+    src: "{{ env }}/genvm_module_web.yaml.j2"
     dest: "{{ web_config_file_path }}"
     owner: "{{ service_identifier }}"
     group: "{{ service_identifier }}"
