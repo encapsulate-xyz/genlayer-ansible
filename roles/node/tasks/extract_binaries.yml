@@ -9,8 +9,8 @@
 
 - name: Download and unarchive
   vars:
-    archive_name: "genlayer-node-linux-amd64-{{ genlayer.version }}.tar.gz"
-    prefix_url: "{{ system_architecture }}/{{ genlayer.version }}/{{ archive_name }}"
+    archive_name: "genlayer-node-linux-amd64-{{ genlayer.validator.version }}.tar.gz"
+    prefix_url: "{{ system_architecture }}/{{ genlayer.validator.version }}/{{ archive_name }}"
   ansible.builtin.unarchive:
     src: "{{ genlayer.source_url }}/{{ prefix_url }}"
     dest: "{{ tmp_dir }}/{{ service_identifier }}"

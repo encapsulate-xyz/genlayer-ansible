@@ -16,7 +16,7 @@
       - "Project: {{ project }}"
       - "Environment: {{ env }}"
       - "Type: {{ type }}"
-      - "Version: {{ vars[project][type].version | default(vars[project].version) }}"
+      - "Version: {{ vars[project][type].version }}"
       - "Username: {{ service_identifier }}"
       - "Service Name: {{ service_identifier }}"
       - "Operating System: {{ ansible_system | lower }}"

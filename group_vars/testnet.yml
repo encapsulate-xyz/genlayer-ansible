@@ -1,8 +1,12 @@
 ---
 # maintains versions and can overwrite all.yml
 genlayer:
-  version: v0.3.10
   validator: 
     address: ""
+    version: v0.3.10
+  llm:
+    version: v0.3.10
+  web:
+    version: v0.3.10
   webdriver:
     version: 0.0.3
