@@ -3,10 +3,10 @@
 genlayer:
   validator: 
     address: ""
-    version: v0.3.10
+    version: v0.3.11
   llm:
-    version: v0.3.10
+    version: v0.3.11
   web:
-    version: v0.3.10
+    version: v0.3.11
   webdriver:
     version: 0.0.3
