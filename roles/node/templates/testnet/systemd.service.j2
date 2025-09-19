@@ -1,0 +1,19 @@
+[Unit]
+Description={{ service_identifier }}
+
+[Service]
+User={{ service_identifier }}
+Group={{ project }}
+WorkingDirectory={{ node_home_dir }}
+EnvironmentFile={{ node_environment_secret_file_path }}
+ExecStart={{ node_bin_dir }}/{{ service_identifier }} run --config {{ node_config_file_path }} \
+--wallet {{ node_wallet_file_path }}
+Restart=always
+RestartSec=4
+LimitNOFILE=65536
+MemoryMax=64G
+StandardOutput=append:{{ node_log_file_path }}
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

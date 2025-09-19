@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yeagerai/genvm/v0.0.18/doc/schemas/default-config.json#web
+bind_address: 127.0.0.1:{{ genlayer.web.ports.listen_port }}
+webdriver_host: http://127.0.0.1:{{ genlayer.webdriver.ports.listen_port }}
+
+threads: 4
+blocking_threads: 16
+log_disable: tracing*,polling*,tungstenite*,tokio_tungstenite*
+#log_level: trace
+
+session_create_request: |
+  {
+    "capabilities": {
+      "alwaysMatch": {
+        "browserName": "firefox",
+        "moz:firefoxOptions": {
+          "args": [
+            "--headless"
+          ]
+        }
+      }
+    }
+  }
+
+extra_tld: []
+always_allow_hosts:
+  - genvm-test

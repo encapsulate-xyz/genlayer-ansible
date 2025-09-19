@@ -1,0 +1,13 @@
+---
+# maintains directories and paths
+webdriver_home_dir: /opt/{{ service_identifier }}
+
+webdriver_bin_dir: "{{ webdriver_home_dir }}/bin"
+webdriver_log_dir: "{{ webdriver_home_dir }}/log"
+
+webdriver_directories:
+  - "{{ webdriver_home_dir }}"
+  - "{{ webdriver_bin_dir }}"
+  - "{{ webdriver_log_dir }}"
+
+webdriver_log_file_path: "{{ webdriver_log_dir }}/{{ service_identifier }}.log"

@@ -1,0 +1,67 @@
+---
+- name: Create a temporary directory
+  ansible.builtin.file:
+    path: "{{ tmp_dir }}/{{ service_identifier }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Download and unarchive
+  vars:
+    archive_name: "genlayer-node-linux-amd64-{{ genlayer.llm.version }}.tar.gz"
+    prefix_url: "{{ system_architecture }}/{{ genlayer.llm.version }}/{{ archive_name }}"
+  ansible.builtin.unarchive:
+    src: "{{ genlayer.source_url }}/{{ prefix_url }}"
+    dest: "{{ tmp_dir }}/{{ service_identifier }}"
+    remote_src: true
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Copy the binary file
+  vars:
+    binary_subpath: "genlayer-node-linux-amd64/third_party/genvm/bin"
+  ansible.builtin.copy:
+    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/{{ llm_service_default_binary_name }}"
+    dest: "{{ llm_bin_dir }}/{{ service_identifier }}"
+    remote_src: true
+    owner: root
+    group: root
+    force: true
+    mode: "0755"
+  notify:
+    - Restart service
+
+- name: Copy the lua script
+  vars:
+    binary_subpath: "genlayer-node-linux-amd64/third_party/genvm/scripts"
+  ansible.builtin.copy:
+    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/{{ llm_lua_script_file_name }}"
+    dest: "{{ llm_lua_script_file_path }}"
+    remote_src: true
+    owner: root
+    group: root
+    force: true
+    mode: "0755"
+  notify:
+    - Restart service
+
+- name: Copy the share library directory script
+  vars:
+    binary_subpath: "genlayer-node-linux-amd64/third_party/genvm/"
+  ansible.builtin.copy:
+    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/share"
+    dest: "{{ llm_home_dir }}"
+    remote_src: true
+    owner: root
+    group: root
+    force: true
+    mode: "0755"
+  notify:
+    - Restart service
+
+- name: Clean up the temporary files in /tmp
+  ansible.builtin.file:
+    path: "{{ tmp_dir }}/{{ service_identifier }}"
+    state: absent

@@ -1,0 +1,122 @@
+# rollup configuration
+rollup:
+  zksyncurl: "{{ vault.testnet.zksync.rpc_url }}" # ZKSync RPC URL
+  zksyncwebsocketurl: "{{ vault.testnet.zksync.ws_url }}" # ZKSync WebSocket URL
+# consensus contracts configuration
+consensus:
+  # Required addresses - these must be configured
+  contractmainaddress: "0xe30293d600fF9B2C865d91307826F28006A458f4" # ConsensusMain Smart Contract Address (REQUIRED)
+  contractdataaddress: "0x2a50afD9d3E0ACC824aC4850d7B4c5561aB5D27a" # ConsensusData Smart Contract Address (REQUIRED)
+  # DEPRECATED: The following addresses are auto-discovered from ConsensusMain.GetContracts()
+  # These fields will be removed in v0.4.0. If present, values are IGNORED and a deprecation warning is logged.
+  # contractmanageraddress: "0x0761ff3847294eb3234f37Bf63fd7F1CA1E840bB" # DEPRECATED - Auto-discovered from ConsensusMain
+  # contractidlenessaddress: "0xD1D09c2743DD26d718367Ba249Ee1629BE88CF33" # DEPRECATED - Auto-discovered from ConsensusMain
+  # contractstakingaddress: "0x31Cb4018ccB7d4F30419d367b6C5c7677AAE30E7" # DEPRECATED - Auto-discovered from ConsensusMain
+  genesis: 817855 # (Optional) Genesis block number for this consensus deployment. If not provided, it will be auto-detected by searching for the first log from the ConsensusMain contract.
+# data directory
+datadir: "{{ node_data_dir }}"
+# logging configuration
+logging:
+  level: "INFO"
+  # json: `true` for json output to console, false for human readable log formatting
+  json: false
+  # Configuration for https://github.com/natefinch/lumberjack
+  file:
+    # enabled: set to `true` to save logs to a folder
+    enabled: false
+    level: "DEBUG"
+    # folder: path to the folder where to store logs. Relative paths go under `datadir`.
+    folder: logs
+    # maxsize: maximum size in megabytes of the log file before it gets rotated.
+    maxsize: 10
+    # maxage: maximum number of days to retain old log files based on the timestamp encoded in their filename.
+    maxage: 7
+    # maxbackups: maximum number of old log files to retain. Set to 0 for no limit
+    maxbackups: 100
+    # localtime: determines if the time used for formatting the timestamps in backup files is the computer's local time. Set to `false` to use UTC time.
+    localtime: false
+    # compress: determines if the rotated log files should be compressed using gzip
+    compress: true
+# node configuration
+node:
+  # Uncomment if the ID of the node is different from the consensus validator address.
+  # It is used to identify the node in the network.
+  # id: "node"
+  # Mode can be "validator" or "archive".
+  # Default value is "validator".
+  mode: "validator"
+  admin:
+    port: {{ genlayer.validator.ports.admin_port }}
+  rpc:
+    port: {{ genlayer.validator.ports.rpc_port }} # RPC server port
+    endpoints:
+      # Group-level configuration (enables/disables all methods in a group)
+      groups:
+        genlayer: true # gen_* methods (call, getContractSchema, etc.)
+        genlayer_debug: true # gen_dbg_* methods (ping, load_test, trie)
+        ethereum: true # eth_* proxy methods
+        zksync: true # zks_* proxy methods
+      # Method-level configuration (overrides group settings for specific methods)
+      methods:
+        gen_call: true
+        gen_getContractSchema: true
+        gen_getTransactionStatus: true
+        gen_getTransactionReceipt: true
+        gen_dbg_ping: true
+        gen_dbg_load_test: true
+        eth_blockNumber: true
+        eth_getBlockByNumber: true
+        eth_getBlockByHash: true
+        eth_getBalance: true
+        eth_getTransactionCount: true
+        eth_getTransactionReceipt: true
+        eth_getLogs: true
+        eth_getCode: true
+        eth_sendRawTransaction: false
+        debug_icStateDump: false
+  ops:
+    port: {{ genlayer.validator.ports.metrics_port }} # Metrics port
+    endpoints:
+      metrics: true # Enable metrics endpoint
+      health: true # Enable health endpoint
+      balance: true # Enable balance endpoint
+  dev:
+    disableSubscription: false # Useful for testing with zksync-anvil
+# genvm configuration
+genvm:
+  bin_dir: {{ genvm_bin_dir }}
+  manage_modules: true # if true node will start genvm modules itself
+# Advanced configuration
+merkleforest:
+  maxdepth: 16
+  dbpath: "{{ node_merkle_forest_dir }}/data.db"
+  indexdbpath: "{{ node_merkle_dir }}/index.db"
+merkletree:
+  maxdepth: 16
+  dbpath: "{{ node_merkle_tree_dir }}"
+# Telemetry configuration
+# telemetry:
+# Uncomment to enable telemetry logs
+#   logs:
+#     endpoint: "https://logs-receiver-xxxxx.run.app"
+#     timeout: "300s"
+#     max_retries: 5
+#     retry_delay: "1s"
+#     max_file_size: "100MB"
+
+# metrics configuration
+metrics:
+  interval: "15s" # Default interval for all collectors (can be overridden per collector)
+#   collectors:
+#     node:
+#       enabled: true
+#       # interval: "30s"  # Optional: Override default interval for this collector
+#     genvm:
+#       enabled: true
+#       # interval: "20s"  # Optional: Override default interval for this collector
+#       # enable_simulated_traffic: false  # Optional: Enable simulated network traffic metrics for GenVM processes (default: false)
+#       # simulated_rx_bytes_per_process: 1024  # Optional: Simulated received bytes per process per interval (default: 1024)
+#       # simulated_tx_bytes_per_process: 512   # Optional: Simulated transmitted bytes per process per interval (default: 512)
+#     webdriver:
+#       enabled: true
+#       # interval: "60s"  # Optional: Override default interval for this collector

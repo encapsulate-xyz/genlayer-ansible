@@ -1,0 +1,4 @@
+---
+# maintains file name, binary names, and anything which is not a directory or path
+
+webdriver_service_default_jar_file_name: selenium-server.jar

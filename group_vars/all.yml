@@ -21,20 +21,20 @@ go:
   path: "{{ tmp_dir }}/go"
   module111: "on"
 
-sui:
+genlayer:
+  source_url: https://storage.googleapis.com/gh-af/genlayer-node/bin
   validator:
-    source_url: https://releases.sui.io
     ports:
-      server_listen_port: 9191
-      metrics_port: 9186
-  fullnode:
-    version: 88888888888
-    source_url: https://releases.sui.io
+      admin_port: 9155
+      rpc_port: 9151
+      metrics_port: 9153
+  webdriver:
+    source_url: yeagerai/genlayer-genvm-webdriver
     ports:
-      server_listen_port: 9191
-      metrics_port: 9186
-  bridge:
-    source_url: https://releases.sui.io
+      listen_port: 4444
+  llm:
     ports:
-      server_listen_port: 9191
-      metrics_port: 9186
+      listen_port: 3031
+  web:
+    ports:
+      listen_port: 3032

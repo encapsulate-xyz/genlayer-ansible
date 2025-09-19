@@ -1,0 +1,285 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yeagerai/genvm/v0.0.17/doc/schemas/default-config.json#llm
+
+bind_address: 127.0.0.1:{{ genlayer.llm.ports.listen_port }}
+
+lua_script_path: {{ llm_lua_script_file_path }}
+
+threads: 4
+blocking_threads: 16
+log_disable: tracing*,polling*,tungstenite*,tokio_tungstenite*
+
+backends:
+  heurist:
+    enabled: true
+    host: https://llm-gateway.heurist.xyz
+    provider: openai-compatible
+    key: ${ENV[HEURISTKEY]}
+    models:
+      meta-llama/llama-3.3-70b-instruct:
+        supports_json: true
+        supports_image: false # this model does not support images
+
+  comput3:
+    enabled: false
+    host: https://api.comput3.ai
+    provider: openai-compatible
+    key: ${ENV[COMPUT3KEY]}
+    models:
+      llama3:70b:
+        supports_json: true
+        supports_image: false # this model does not support images
+
+  ionet:
+    enabled: false
+    host: https://api.intelligence.io.solutions/api
+    provider: openai-compatible
+    key: ${ENV[IOINTELLIGENCEKEY]}
+    models:
+      meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8:
+        supports_json: true
+        supports_image: false
+      deepseek-ai/DeepSeek-R1-0528:
+        supports_json: true
+        supports_image: false
+      Qwen/Qwen3-235B-A22B-FP8:
+        supports_json: true
+        supports_image: false
+      meta-llama/Llama-3.3-70B-Instruct:
+        supports_json: true
+        supports_image: false
+      google/gemma-3-27b-it:
+        supports_json: true
+        supports_image: false
+      mistralai/Magistral-Small-2506:
+        supports_json: true
+        supports_image: false
+      mistralai/Devstral-Small-2505:
+        supports_json: true
+        supports_image: false
+      deepseek-ai/DeepSeek-R1-Distill-Llama-70B:
+        supports_json: true
+        supports_image: false
+      deepseek-ai/DeepSeek-R1:
+        supports_json: true
+        supports_image: false
+      deepseek-ai/DeepSeek-R1-Distill-Qwen-32B:
+        supports_json: true
+        supports_image: false
+      microsoft/phi-4:
+        supports_json: true
+        supports_image: false
+      nvidia/AceMath-7B-Instruct:
+        supports_json: true
+        supports_image: false
+      mistralai/Mistral-Large-Instruct-2411:
+        supports_json: true
+        supports_image: false
+      bespokelabs/Bespoke-Stratos-32B:
+        supports_json: true
+        supports_image: false
+      netease-youdao/Confucius-o1-14B:
+        supports_json: true
+        supports_image: false
+      CohereForAI/aya-expanse-32b:
+        supports_json: true
+        supports_image: false
+      THUDM/glm-4-9b-chat:
+        supports_json: true
+        supports_image: false
+      mistralai/Ministral-8B-Instruct-2410:
+        supports_json: true
+        supports_image: false
+      openbmb/MiniCPM3-4B:
+        supports_json: true
+        supports_image: false
+      ibm-granite/granite-3.1-8b-instruct:
+        supports_json: true
+        supports_image: false
+      Qwen/Qwen2.5-VL-32B-Instruct:
+        supports_json: true
+        supports_image: true
+      meta-llama/Llama-3.2-90B-Vision-Instruct:
+        supports_json: true
+        supports_image: true
+      BAAI/bge-multilingual-gemma2:
+        supports_json: true
+        supports_image: false
+
+  libertai:
+    enabled: false
+    host: https://api.libertai.io
+    provider: openai-compatible
+    key: ${ENV[LIBERTAI_API_KEY]}
+    models:
+      hermes-3-8b-tee:
+        supports_json: true
+        supports_image: false
+      gemma-3-27b:
+        supports_json: true
+        supports_image: false
+
+  openai:
+    enabled: false
+    host: https://api.openai.com
+    provider: openai-compatible
+    key: ${ENV[OPENAIKEY]}
+    models:
+      gpt-4o:
+        supports_json: true
+        supports_image: true # works
+        meta: {} # <- you can put anything here to read it from lua
+
+  anthropic:
+    enabled: false
+    host: https://api.anthropic.com
+    provider: anthropic
+    key: ${ENV[ANTHROPICKEY]}
+    models:
+      claude-3-7-sonnet-20250219:
+        supports_json: false # it is quite bad because it wraps result into random "result/value/object/..."
+        supports_image: true # works
+
+  xai:
+    enabled: false
+    host: https://api.x.ai
+    provider: openai-compatible
+    key: ${ENV[XAIKEY]}
+    models:
+      grok-2-1212:
+        supports_json: true
+        supports_image: false # hallucinates
+
+  google:
+    enabled: false
+    host: https://generativelanguage.googleapis.com
+    provider: google
+    key: ${ENV[GEMINIKEY]}
+    models:
+      gemini-1.5-flash:
+        supports_json: true
+        supports_image: true # works
+
+  atoma:
+    enabled: false
+    host: https://api.atoma.network
+    provider: openai-compatible
+    key: ${ENV[ATOMAKEY]}
+    models:
+      meta-llama/Llama-3.3-70B-Instruct:
+        supports_json: true
+
+prompt_templates:
+  eq_comparative:
+    system: |
+        You are an a judge tasked with making a binary determination about whether two outputs satisfy the given comparison criteria.
+        You are given two potential outputs to compare: the primary output and the comparison output.
+        You must evaluate strictly based on the provided comparison criteria without introducing external criteria or assumptions.
+        Your evaluation must be rigorous and thorough, as the stakes are high.
+
+    user: |
+        Input sections:
+        <primary_output>
+        #{leader_answer}
+        </primary_output>
+
+        <comparison_output>
+        #{validator_answer}
+        </comparison_output>
+
+        <comparison_criteria>
+        #{principle}
+        </comparison_criteria>
+
+        Evaluation rules:
+
+        1. If any section is missing or empty, return false
+        2. Both outputs must satisfy ALL comparison criteria completely - partial satisfaction is insufficient
+        3. If there is ANY ambiguity about whether a criterion is met, return false
+        4. Evaluate using ONLY the explicitly stated comparison criteria
+        5. Formatting differences alone do not affect equivalence unless specified in the criteria
+        6. Do not make assumptions about unstated criteria or requirements
+
+        Output format:
+        Respond with json object containing key "result" and associated boolean value,
+        representing the result of evaluating above criteria. And string field "reason",
+        which contains extremely concise reason for decision.
+
+        Examples:
+        {"result": true, "reason": "all rules satisfied"}
+        {"result": false, "reason": "rule 2 violated: ..."}
+
+        Output must have only these two fields and not be wrapped in other objects.
+  eq_non_comparative_leader:
+    system: |
+      You must perform given task for the input. Result must satisfy all of the criteria listed below
+      You are tasked with performing a "task" for the given "input", your evaluation result (output) must be and satisfy all given criteria.
+      You must evaluate strictly based on the provided comparison criteria and task without introducing external criteria or assumptions.
+      Your result must be rigorous and thorough, as it's conformity will be evaluated in future.
+    user: |
+      Input sections:
+      <task>
+      #{task}
+      </task>
+
+      <criteria>
+      #{criteria}
+      </criteria>
+
+      <input>
+      #{input}
+      </input>
+
+      Evaluation rules:
+
+      1. Output must satisfy ALL comparison criteria completely - partial satisfaction is insufficient
+      2. There must be NO ambiguity about whether a criterion is met
+      3. Evaluate using ONLY the explicitly stated criteria and a task
+      4. Do not make assumptions about unstated criteria or requirements
+
+      Output format:
+      Respond only with: the result of performing the task, do not include reasoning or evaluation rules satisfaction.
+      If task requires outputting json, output valid parsable json without extra symbols.
+  eq_non_comparative_validator:
+    system: |
+      You are an a judge tasked with making a binary determination about whether task evaluation result (output) is valid for the given input and satisfies given criteria.
+      You must evaluate strictly based on the provided comparison criteria and task without introducing external criteria or assumptions.
+      Your evaluation must be rigorous and thorough, as the stakes are high.
+
+    user: |
+      Input sections:
+      <task>
+      #{task}
+      </task>
+
+      <input>
+      #{input}
+      </input>
+
+      <criteria>
+      #{criteria}
+      </criteria>
+
+      <output>
+      #{output}
+      </output>
+
+      Evaluation rules:
+
+      1. If any section is missing or empty, return false
+      2. Output must satisfy ALL comparison criteria completely - partial satisfaction is insufficient
+      3. If there is ANY ambiguity about whether a criterion is met, return false
+      4. Evaluate using ONLY the explicitly stated criteria and a task
+      5. Formatting differences alone do not affect the result unless specified in the criteria
+      6. Do not make assumptions about unstated criteria or requirements
+
+      Output format:
+      Respond with json object containing key "result" and associated boolean value,
+      representing the result of evaluating above criteria. And string field "reason",
+      which contains extremely concise reason for decision.
+
+      Examples:
+      {"result": true, "reason": "all rules satisfied"}
+      {"result": false, "reason": "rule 1 violated: section input is empty"}
+      {"result": false, "reason": "criteria not met: <explanation>"}
+
+      Output must have only these two fields and not be wrapped in other objects.

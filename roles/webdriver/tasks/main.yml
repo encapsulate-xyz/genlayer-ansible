@@ -1,0 +1,24 @@
+---
+- name: Include user creation task
+  ansible.builtin.include_tasks: tasks/create_user_and_directories.yml
+  vars:
+    home: "{{ webdriver_home_dir }}"
+    directories: "{{ webdriver_directories }}"
+    log_file_path: "{{ webdriver_log_file_path }}"
+
+- name: Include install dependencies task
+  ansible.builtin.include_tasks: install_dependencies.yml
+
+- name: Include extract jar file task
+  ansible.builtin.include_tasks: extract_jar_file.yml
+
+- name: Copy systemd service file
+  ansible.builtin.template:
+    src: "{{ env }}/systemd.service.j2"
+    dest: /etc/systemd/system/{{ service_identifier }}.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload service
+    - Restart service

@@ -1,0 +1,39 @@
+---
+- name: Include the specific ufw vars file
+  ansible.builtin.include_vars:
+    file: vars/ufw_rules.yml
+
+- name: Apply UFW rules
+  ansible.builtin.include_tasks: tasks/apply_ufw_rules.yml
+  loop: "{{ web_ufw_rules }}"
+
+- name: Include user creation task
+  ansible.builtin.include_tasks: tasks/create_user_and_directories.yml
+  vars:
+    home: "{{ web_home_dir }}"
+    directories: "{{ web_directories }}"
+    log_file_path: "{{ web_log_file_path }}"
+
+- name: Include extract binaries task
+  ansible.builtin.include_tasks: extract_binaries.yml
+
+- name: Copy genvm web configuration file
+  ansible.builtin.template:
+    src: "{{ env }}/genvm_module_web.yaml.j2"
+    dest: "{{ web_config_file_path }}"
+    owner: "{{ service_identifier }}"
+    group: "{{ service_identifier }}"
+    mode: "0644"
+  notify:
+    - Restart service
+
+- name: Copy systemd service file
+  ansible.builtin.template:
+    src: "{{ env }}/systemd.service.j2"
+    dest: /etc/systemd/system/{{ service_identifier }}.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload service
+    - Restart service

@@ -4,11 +4,16 @@ all:
   vars:
     env: testnet
   children:
-    sui:
+    genlayer:
       hosts:
-        bridge.sui.testnet.encapsulate.xyz:
-          type: bridge
-        validator.sui.testnet.encapsulate.xyz:
+        validator.genlayer.testnet.encapsulate.xyz:
           type: validator
-        fullnode.sui.testnet.encapsulate.xyz:
-          type: fullnode
+        llm_host:
+          ansible_host: validator.genlayer.testnet.encapsulate.xyz
+          type: llm
+        webdriver_host:
+          ansible_host: validator.genlayer.testnet.encapsulate.xyz
+          type: webdriver
+        web_host:
+          ansible_host: validator.genlayer.testnet.encapsulate.xyz
+          type: web

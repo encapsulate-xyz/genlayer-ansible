@@ -1,0 +1,18 @@
+[Unit]
+Description={{ service_identifier }}
+
+[Service]
+User={{ service_identifier }}
+Group={{ project }}
+WorkingDirectory={{ llm_home_dir }}
+EnvironmentFile={{ llm_environment_general_file_path }}
+ExecStart={{ llm_bin_dir }}/{{ service_identifier }} llm --config {{ llm_config_file_path }}
+Restart=always
+RestartSec=4
+LimitNOFILE=65536
+MemoryMax=64G
+StandardOutput=append:{{ llm_log_file_path }}
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

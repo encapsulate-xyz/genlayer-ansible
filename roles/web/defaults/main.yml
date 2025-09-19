@@ -1,0 +1,16 @@
+---
+# maintains directories and paths
+web_home_dir: /opt/{{ service_identifier }}
+
+web_bin_dir: "{{ web_home_dir }}/bin"
+web_config_dir: "{{ web_home_dir }}/config"
+web_log_dir: "{{ web_home_dir }}/log"
+
+web_directories:
+  - "{{ web_home_dir }}"
+  - "{{ web_bin_dir }}"
+  - "{{ web_config_dir }}"
+  - "{{ web_log_dir }}"
+
+web_config_file_path: "{{ web_config_dir }}/{{ web_config_file_name }}"
+web_log_file_path: "{{ web_log_dir }}/{{ service_identifier }}.log"

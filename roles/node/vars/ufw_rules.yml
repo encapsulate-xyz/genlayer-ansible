@@ -1,0 +1,13 @@
+---
+node_ufw_rules:
+  - port: "{{ genlayer.validator.ports.admin_port }}"
+    proto: tcp
+    rule: allow
+    from: any
+    comment: admin_port
+
+  - port: "{{ genlayer.validator.ports.metrics_port }}"
+    proto: tcp
+    rule: allow
+    from: "{{ monitor_server_dns }}"
+    comment: metrics_port

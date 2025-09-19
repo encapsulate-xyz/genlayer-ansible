@@ -1,0 +1,12 @@
+---
+# maintains file name, binary names, and anything which is not a directory or path
+
+# config file names
+node_config_file_name: config.yaml
+node_wallet_file_name: wallet.yaml
+
+# binary names
+node_service_default_binary_name: genlayernode
+
+# environment file names
+node_environment_secret_file_name: "{{ service_identifier }}.secrets.env"
