@@ -32,13 +32,6 @@
     - type == 'validator'
     - fetch_vault_secrets | default(false) | bool
   block:
-    - name: Fetch json key and save
-      ansible.builtin.include_tasks: tasks/get_and_save_vault_secret.yml
-      vars:
-        vault_secret_source_path: "{{ project }}/{{ org }}/{{ type }}/{{ node_key_json_file_name }}"
-        secret_destination_path: "{{ node_key_json_file_path }}"
-        secret_type: json
-
     - name: Fetch secret environment file
       ansible.builtin.include_tasks: tasks/get_and_save_vault_secret.yml
       vars:
