@@ -1,123 +1,19 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/yeagerai/genvm/v0.0.17/doc/schemas/default-config.json#llm
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yeagerai/genvm/refs/tags/v0.2.11/doc/schemas/default-config.json#llm
 
 bind_address: 127.0.0.1:{{ genlayer.llm.ports.listen_port }}
 
 lua_script_path: {{ llm_lua_script_file_path }}
+vm_count: 6
+lua_path: {{ llm_lib_dir }}/genvm-lua/?.lua
+signer_url: "http://localhost:{{ genlayer.validator.ports.admin_port }}/genvm/sign"
+signer_headers: {}
 
 threads: 4
 blocking_threads: 16
 log_disable: tracing*,polling*,tungstenite*,tokio_tungstenite*
+#log_level: info
 
 backends:
-  heurist:
-    enabled: true
-    host: https://llm-gateway.heurist.xyz
-    provider: openai-compatible
-    key: ${ENV[HEURISTKEY]}
-    models:
-      meta-llama/llama-3.3-70b-instruct:
-        supports_json: true
-        supports_image: false # this model does not support images
-
-  comput3:
-    enabled: false
-    host: https://api.comput3.ai
-    provider: openai-compatible
-    key: ${ENV[COMPUT3KEY]}
-    models:
-      llama3:70b:
-        supports_json: true
-        supports_image: false # this model does not support images
-
-  ionet:
-    enabled: false
-    host: https://api.intelligence.io.solutions/api
-    provider: openai-compatible
-    key: ${ENV[IOINTELLIGENCEKEY]}
-    models:
-      meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8:
-        supports_json: true
-        supports_image: false
-      deepseek-ai/DeepSeek-R1-0528:
-        supports_json: true
-        supports_image: false
-      Qwen/Qwen3-235B-A22B-FP8:
-        supports_json: true
-        supports_image: false
-      meta-llama/Llama-3.3-70B-Instruct:
-        supports_json: true
-        supports_image: false
-      google/gemma-3-27b-it:
-        supports_json: true
-        supports_image: false
-      mistralai/Magistral-Small-2506:
-        supports_json: true
-        supports_image: false
-      mistralai/Devstral-Small-2505:
-        supports_json: true
-        supports_image: false
-      deepseek-ai/DeepSeek-R1-Distill-Llama-70B:
-        supports_json: true
-        supports_image: false
-      deepseek-ai/DeepSeek-R1:
-        supports_json: true
-        supports_image: false
-      deepseek-ai/DeepSeek-R1-Distill-Qwen-32B:
-        supports_json: true
-        supports_image: false
-      microsoft/phi-4:
-        supports_json: true
-        supports_image: false
-      nvidia/AceMath-7B-Instruct:
-        supports_json: true
-        supports_image: false
-      mistralai/Mistral-Large-Instruct-2411:
-        supports_json: true
-        supports_image: false
-      bespokelabs/Bespoke-Stratos-32B:
-        supports_json: true
-        supports_image: false
-      netease-youdao/Confucius-o1-14B:
-        supports_json: true
-        supports_image: false
-      CohereForAI/aya-expanse-32b:
-        supports_json: true
-        supports_image: false
-      THUDM/glm-4-9b-chat:
-        supports_json: true
-        supports_image: false
-      mistralai/Ministral-8B-Instruct-2410:
-        supports_json: true
-        supports_image: false
-      openbmb/MiniCPM3-4B:
-        supports_json: true
-        supports_image: false
-      ibm-granite/granite-3.1-8b-instruct:
-        supports_json: true
-        supports_image: false
-      Qwen/Qwen2.5-VL-32B-Instruct:
-        supports_json: true
-        supports_image: true
-      meta-llama/Llama-3.2-90B-Vision-Instruct:
-        supports_json: true
-        supports_image: true
-      BAAI/bge-multilingual-gemma2:
-        supports_json: true
-        supports_image: false
-
-  libertai:
-    enabled: false
-    host: https://api.libertai.io
-    provider: openai-compatible
-    key: ${ENV[LIBERTAI_API_KEY]}
-    models:
-      hermes-3-8b-tee:
-        supports_json: true
-        supports_image: false
-      gemma-3-27b:
-        supports_json: true
-        supports_image: false
-
   openai:
     enabled: false
     host: https://api.openai.com
@@ -129,13 +25,23 @@ backends:
         supports_image: true # works
         meta: {} # <- you can put anything here to read it from lua
 
+  heurist:
+    enabled: true
+    host: https://llm-gateway.heurist.xyz
+    provider: openai-compatible
+    key: ${ENV[HEURISTKEY]}
+    models:
+      meta-llama/llama-3.3-70b-instruct:
+        supports_json: true
+        supports_image: false # this model does not support images
+
   anthropic:
     enabled: false
     host: https://api.anthropic.com
     provider: anthropic
     key: ${ENV[ANTHROPICKEY]}
     models:
-      claude-3-7-sonnet-20250219:
+      claude-haiku-4-5-20251001:
         supports_json: false # it is quite bad because it wraps result into random "result/value/object/..."
         supports_image: true # works
 
@@ -155,7 +61,7 @@ backends:
     provider: google
     key: ${ENV[GEMINIKEY]}
     models:
-      gemini-1.5-flash:
+      gemini-2.5-flash:
         supports_json: true
         supports_image: true # works
 
@@ -202,11 +108,11 @@ prompt_templates:
         Output format:
         Respond with json object containing key "result" and associated boolean value,
         representing the result of evaluating above criteria. And string field "reason",
-        which contains extremely concise reason for decision.
+        which contains extremely concise reason for decision. Reason should precede result.
 
         Examples:
-        {"result": true, "reason": "all rules satisfied"}
-        {"result": false, "reason": "rule 2 violated: ..."}
+        {"reason": "all rules satisfied", "result": true}
+        {"reason": "rule 2 violated: ...", "result": false}
 
         Output must have only these two fields and not be wrapped in other objects.
   eq_non_comparative_leader:
@@ -275,11 +181,11 @@ prompt_templates:
       Output format:
       Respond with json object containing key "result" and associated boolean value,
       representing the result of evaluating above criteria. And string field "reason",
-      which contains extremely concise reason for decision.
+      which contains extremely concise reason for decision. Reason should precede result.
 
       Examples:
-      {"result": true, "reason": "all rules satisfied"}
-      {"result": false, "reason": "rule 1 violated: section input is empty"}
-      {"result": false, "reason": "criteria not met: <explanation>"}
+      {"reason": "all rules satisfied", "result": true}
+      {"reason": "rule 1 violated: section input is empty", "result": false}
+      {"reason": "criteria not met: <explanation>", "result": false}
 
       Output must have only these two fields and not be wrapped in other objects.

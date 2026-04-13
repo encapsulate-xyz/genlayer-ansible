@@ -1,10 +1,16 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/yeagerai/genvm/v0.0.18/doc/schemas/default-config.json#web
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yeagerai/genvm/refs/tags/v0.2.11/doc/schemas/default-config.json#web
 bind_address: 127.0.0.1:{{ genlayer.web.ports.listen_port }}
 webdriver_host: http://127.0.0.1:{{ genlayer.webdriver.ports.listen_port }}
 
+lua_script_path: {{ web_lua_script_file_path }}
+vm_count: 6
+lua_path: {{ web_lib_dir }}/genvm-lua/?.lua
+signer_url: "#{signerUrl}"
+signer_headers: {}
+
 threads: 4
 blocking_threads: 16
-log_disable: tracing*,polling*,tungstenite*,tokio_tungstenite*
+log_disable: ""
 #log_level: trace
 
 session_create_request: |
@@ -22,5 +28,4 @@ session_create_request: |
   }
 
 extra_tld: []
-always_allow_hosts:
-  - genvm-test
+always_allow_hosts: []

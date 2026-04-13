@@ -3,7 +3,7 @@
 
 org: encapsulate
 domain_regex: ^([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$
-monitor_server_dns: monitor.encapsulate.xyz
+monitor_server_dns: h1-finland-hub-monitor.crane-goldeye.ts.net
 ansible_port: 8192
 
 architecture_map:
@@ -38,3 +38,6 @@ genlayer:
   web:
     ports:
       listen_port: 3032
+  manager:
+    ports:
+      listen_port: 3999

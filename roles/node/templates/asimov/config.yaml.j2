@@ -1,0 +1,144 @@
+# rollup configuration
+rollup:
+  genlayerchainrpcurl: "{{ vault.testnet.zksync.rpc_url }}" # GenLayer Chain RPC URL
+  genlayerchainwebsocketurl: "{{ vault.testnet.zksync.ws_url }}" # GenLayer Chain WebSocket URL
+# consensus contracts configuration
+consensus:
+  # Testnet - Phase 5
+  consensusaddress: "{{ genlayer.consensus_address }}" # AddressManager Smart Contract Address
+  genesis: {{ genlayer.genesis }} # (Optional) Genesis block number for this consensus deployment. If not provided, it will be auto-detected by searching for the first log from the ConsensusMain contract.
+# data directory
+datadir: "{{ node_data_dir }}"
+# logging configuration
+logging:
+  level: "INFO"
+  # json: `true` for json output to console, false for human readable log formatting
+  json: false
+  # Configuration for https://github.com/natefinch/lumberjack
+  file:
+    # enabled: set to `true` to save logs to a folder
+    enabled: false
+    level: "DEBUG"
+    # folder: path to the folder where to store logs. Relative paths go under `datadir`.
+    folder: logs
+    # maxsize: maximum size in megabytes of the log file before it gets rotated.
+    maxsize: 10
+    # maxage: maximum number of days to retain old log files based on the timestamp encoded in their filename.
+    maxage: 7
+    # maxbackups: maximum number of old log files to retain. Set to 0 for no limit
+    maxbackups: 100
+    # localtime: determines if the time used for formatting the timestamps in backup files is the computer's local time. Set to `false` to use UTC time.
+    localtime: false
+    # compress: determines if the rotated log files should be compressed using gzip
+    compress: true
+# node configuration
+node:
+  # Uncomment if the ID of the node is different from the validator wallet address.
+  # It is used to identify the node in the network.
+  # id: "node"
+  # Mode can be "validator" or "full".
+  # Default value is "validator".
+  mode: "validator"
+  # Address of the ValidatorWallet contract (required for validator mode)
+  validatorWalletAddress: "{{ genlayer.validator_address }}"
+  # Address of the operator that owns the ValidatorWallet
+  operatorAddress: "{{ genlayer.operator_address }}"
+  admin:
+    port: {{ genlayer.validator.ports.admin_port }}
+  rpc:
+    port: {{ genlayer.validator.ports.rpc_port }} # RPC server port
+    # ratelimit_whitelist: IPs or CIDRs that bypass rate limiting entirely
+    # ratelimit_whitelist:
+    #   - "127.0.0.1"
+    #   - "::1"              # IPv6 loopback (localhost on macOS)
+    #   - "10.0.0.0/8"
+    endpoints:
+      # Group-level configuration (enables/disables all methods in a group).
+      # When a group is enabled, ALL methods in that group are available.
+      # Rate limits (req/s per IP) apply by default even without config:
+      #   genlayer: 20, genlayer_debug: 2, ethereum: 50, zksync: 50
+      #   gen_call: 2, gen_getContractSchema: 2 (method-level overrides)
+      groups:
+        genlayer: true # gen_* methods (default ratelimit: 20 req/s per IP)
+        genlayer_debug: true # gen_dbg_* methods (default ratelimit: 2 req/s per IP)
+        ethereum: true # eth_* proxy methods (default ratelimit: 50 req/s per IP)
+        # includes: eth_blockNumber, eth_getBlockByNumber, eth_getBlockByHash,
+        #   eth_sendRawTransaction, eth_getTransactionReceipt, etc.
+        zksync: true # zks_* proxy methods (default ratelimit: 50 req/s per IP)
+        # includes: zks_getTransaction, zks_getBlockDetails, etc.
+      # Object format with custom rate limit (overrides defaults):
+      # groups:
+      #   genlayer:
+      #     enabled: true
+      #     ratelimit: 100       # custom: 100 req/s per IP instead of default 20
+      #
+      # Method-level configuration (optional, overrides group settings).
+      # Methods inherit their group's enabled state by default.
+      # Use this section to:
+      #   - Disable specific methods in an enabled group
+      #   - Enable specific methods in a disabled group
+      #   - Set per-method rate limits
+      #
+      # Example: enable all eth_* except eth_sendRawTransaction:
+      #   groups:
+      #     ethereum: true
+      #   methods:
+      #     eth_sendRawTransaction: false
+      #
+      # Example: disable all eth_* except eth_sendRawTransaction:
+      #   groups:
+      #     ethereum: false
+      #   methods:
+      #     eth_sendRawTransaction: true
+      # methods:
+      #   gen_call: true                   # default ratelimit: 2 req/s per IP (GenVM-bound)
+      #   gen_getContractSchema: true      # default ratelimit: 2 req/s per IP (GenVM-bound)
+      #   eth_blockNumber: true
+      #   eth_sendRawTransaction: true
+      #   zks_getTransaction: true
+      # Object format with custom rate limit:
+      # methods:
+      #   gen_call:
+      #     enabled: true
+      #     ratelimit: 5         # custom: 5 req/s per IP instead of default 2
+      #   gen_getContractSchema:
+      #     enabled: true
+      #     ratelimit: 0         # explicitly disable rate limiting for this method
+  ops:
+    port: {{ genlayer.validator.ports.metrics_port }} # Metrics port
+    endpoints:
+      metrics: true # Enable metrics endpoint
+      health: true # Enable health endpoint
+      balance: true # Enable balance endpoint
+  dev: {}
+# genvm configuration
+genvm:
+  bin_dir: {{ node_bin_dir }}
+  start_manager: false # if true node will start genvm manager itself
+  manager_url: http://127.0.0.1:{{ genlayer.manager.ports.listen_port }}
+  permits: 8 # Leave empty for autodiscovery, put a number for updating genvm permits on startup
+  sync_wait_timeout: "20s" # Max time to wait for GenVM to sync to a requested block before returning an error
+# Advanced configuration
+merkleforest:
+  maxdepth: 16
+  dbpath: "{{ node_merkle_forest_dir }}/data.db"
+  indexdbpath: "{{ node_merkle_dir }}/index.db"
+merkletree:
+  maxdepth: 16
+  dbpath: "{{ node_merkle_tree_dir }}"
+# metrics configuration
+metrics:
+  interval: "15s" # Default interval for all collectors (can be overridden per collector)
+  collectors:
+    node:
+      enabled: true
+      # interval: "30s"  # Optional: Override default interval for this collector
+    genvm:
+      enabled: true
+      # interval: "20s"  # Optional: Override default interval for this collector
+      # enable_simulated_traffic: false  # Optional: Enable simulated network traffic metrics for GenVM processes (default: false)
+      # simulated_rx_bytes_per_process: 1024  # Optional: Simulated received bytes per process per interval (default: 1024)
+      # simulated_tx_bytes_per_process: 512   # Optional: Simulated transmitted bytes per process per interval (default: 512)
+    webdriver:
+      enabled: true
+      # interval: "60s"  # Optional: Override default interval for this collector

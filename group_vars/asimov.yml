@@ -1,0 +1,17 @@
+---
+# maintains versions and can overwrite all.yml
+genlayer:
+  consensus_address: "0xe66B434bc83805f380509642429eC8e43AE9874a"
+  genesis: 17326
+  validator_address: ""
+  operator_address: ""
+  validator:
+    version: v0.5.8
+  llm:
+    version: v0.5.8
+  web:
+    version: v0.5.8
+  manager:
+    version: v0.5.8
+  webdriver:
+    version: 0.0.10

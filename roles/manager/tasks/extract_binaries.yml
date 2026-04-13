@@ -9,8 +9,8 @@
 
 - name: Download and unarchive
   vars:
-    archive_name: "genlayer-node-linux-amd64-{{ genlayer.web.version }}.tar.gz"
-    prefix_url: "{{ system_architecture }}/{{ genlayer.web.version }}/{{ archive_name }}"
+    archive_name: "genlayer-node-linux-amd64-{{ genlayer.manager.version }}.tar.gz"
+    prefix_url: "{{ system_architecture }}/{{ genlayer.manager.version }}/{{ archive_name }}"
   ansible.builtin.unarchive:
     src: "{{ genlayer.source_url }}/{{ prefix_url }}"
     dest: "{{ tmp_dir }}/{{ service_identifier }}"
@@ -23,8 +23,8 @@
   vars:
     binary_subpath: "genlayer-node-linux-amd64/third_party/genvm/bin"
   ansible.builtin.copy:
-    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/{{ web_service_default_binary_name }}"
-    dest: "{{ web_bin_dir }}/{{ service_identifier }}"
+    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/{{ manager_service_default_binary_name }}"
+    dest: "{{ manager_bin_dir }}/{{ service_identifier }}"
     remote_src: true
     owner: root
     group: root
@@ -33,31 +33,17 @@
   notify:
     - Restart service
 
-- name: Copy the lua script
+- name: Copy the manifest file
   vars:
-    binary_subpath: "genlayer-node-linux-amd64/third_party/genvm/config"
+    binary_subpath: "genlayer-node-linux-amd64/third_party/genvm/data"
   ansible.builtin.copy:
-    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/{{ web_lua_script_file_name }}"
-    dest: "{{ web_lua_script_file_path }}"
+    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/{{ manager_manifest_file_name }}"
+    dest: "{{ manager_manifest_file_path }}"
     remote_src: true
     owner: "{{ service_identifier }}"
     group: "{{ service_identifier }}"
     force: true
-    mode: "0755"
-  notify:
-    - Restart service
-
-- name: Copy the lib directory
-  vars:
-    binary_subpath: "genlayer-node-linux-amd64/third_party/genvm/"
-  ansible.builtin.copy:
-    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/lib/"
-    dest: "{{ web_lib_dir }}"
-    remote_src: true
-    owner: root
-    group: root
-    force: true
-    mode: "0755"
+    mode: "0644"
   notify:
     - Restart service
 
