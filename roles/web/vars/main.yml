@@ -3,6 +3,7 @@
 
 # config file names
 web_config_file_name: genvm-module-web.yaml
+web_lua_script_file_name: genvm-web-default.lua
 
 # binary names
 web_service_default_binary_name: genvm-modules
