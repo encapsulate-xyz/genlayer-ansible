@@ -3,8 +3,8 @@
 genlayer:
   consensus_address: "0xe66B434bc83805f380509642429eC8e43AE9874a"
   genesis: 17326
-  validator_address: ""
-  operator_address: ""
+  validator_address: "0xeBe8e4d2C847405A8793867213078F614F3E6A6A"
+  operator_address: "0x144398850d75ae3b75930efc7537e8ea99364af0"
   validator:
     version: v0.5.8
   llm:
