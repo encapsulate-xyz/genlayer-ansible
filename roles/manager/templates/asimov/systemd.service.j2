@@ -1,0 +1,19 @@
+[Unit]
+Description={{ service_identifier }}
+
+[Service]
+User={{ service_identifier }}
+Group={{ project }}
+WorkingDirectory={{ manager_home_dir }}
+ExecStart={{ manager_bin_dir }}/{{ service_identifier }} manager \
+  --config {{ manager_config_file_path }} \
+  --port {{ genlayer.manager.ports.listen_port }}
+Restart=always
+RestartSec=4
+LimitNOFILE=65536
+MemoryMax=64G
+StandardOutput=append:{{ manager_log_file_path }}
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,18 @@
+---
+# maintains directories and paths
+manager_home_dir: /opt/{{ service_identifier }}
+
+manager_bin_dir: "{{ manager_home_dir }}/bin"
+manager_config_dir: "{{ manager_home_dir }}/config"
+manager_log_dir: "{{ manager_home_dir }}/log"
+
+manager_directories:
+  - "{{ manager_home_dir }}"
+  - "{{ manager_bin_dir }}"
+  - "{{ manager_config_dir }}"
+  - "{{ manager_log_dir }}"
+
+manager_log_file_path: "{{ manager_log_dir }}/{{ service_identifier }}.log"
+
+manager_config_file_path: "{{ manager_config_dir }}/{{ manager_config_file_name }}"
+manager_manifest_file_path: "{{ manager_config_dir }}/{{ manager_manifest_file_name }}"
