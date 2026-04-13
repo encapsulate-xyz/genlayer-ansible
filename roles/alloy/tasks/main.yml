@@ -1,0 +1,36 @@
+---
+- name: Include user creation task
+  ansible.builtin.include_tasks: tasks/create_user_and_directories.yml
+  vars:
+    home: "{{ alloy_home_dir }}"
+    directories: "{{ alloy_directories }}"
+    log_file_path: "{{ alloy_log_file_path }}"
+
+- name: Include Download, Unarchive and Copy Binary task
+  ansible.builtin.include_tasks: tasks/extract_binary.yml
+  vars:
+    source_url: "{{ alloy.source_url }}/{{ alloy.version }}"
+    suffix_url: "{{ alloy_default_binary_name }}.{{ alloy.file_extension }}"
+    binary_dest_path: "{{ alloy_bin_dir }}/{{ service_identifier }}"
+    extracted_binary_path: "{{ alloy_default_binary_name }}"
+
+- name: Copy alloy config
+  ansible.builtin.template:
+    src: "{{ env }}/config.alloy.j2"
+    dest: "{{ alloy_config_file_path }}"
+    owner: "{{ service_identifier }}"
+    group: "{{ service_identifier }}"
+    mode: "0644"
+  notify:
+    - Restart service
+
+- name: Copy alloy service file
+  ansible.builtin.template:
+    src: systemd.service.j2
+    dest: /etc/systemd/system/{{ service_identifier }}.service
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Reload service
+    - Restart service

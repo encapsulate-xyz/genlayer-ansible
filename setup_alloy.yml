@@ -1,0 +1,25 @@
+---
+- name: Setup Alloy
+  hosts: all
+  become: true
+  gather_facts: true
+  vars:
+    project: "{{ group_names[0] }}"
+    system_architecture: "{{ architecture_map[ansible_architecture] | default(ansible_architecture) }}"
+  vars_files:
+    - group_vars/all.yml
+    - group_vars/default.yml
+    - group_vars/vault.yml
+    - group_vars/{{ env }}.yml
+
+  tasks:
+    - name: Set service_identifier
+      ansible.builtin.set_fact:
+        service_identifier: "{{ project }}-{{ alloy.service_identifier_suffix }}-{{ env }}"
+
+    - name: Include common handlers
+      ansible.builtin.include_role:
+        name: common
+    - name: Include alloy role
+      ansible.builtin.include_role:
+        name: alloy

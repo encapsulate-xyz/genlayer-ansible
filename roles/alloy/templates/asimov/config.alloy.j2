@@ -1,0 +1,83 @@
+// ==========================================
+// METRICS CONFIGURATION
+// ==========================================
+
+// 1. Remote write to Central Prometheus
+prometheus.remote_write "central" {
+  endpoint {
+    url = "https://prometheus-prod-66-prod-us-east-3.grafana.net/api/prom/push"
+
+    basic_auth {
+      username = "2855269"
+      password = "{{ vault.external.asimov.telemetry_password }}"
+    }
+  }
+}
+
+// 2. Node metrics endpoint
+discovery.relabel "node_metrics" {
+  targets = [{
+    "__address__" = "localhost:{{ genlayer.validator.ports.metrics_port }}",
+  }]
+
+  rule {
+    target_label = "node_id"
+    replacement  = "Encapsulate"
+  }
+  rule {
+    target_label = "validator_name"
+    replacement  = "Encapsulate"
+  }
+}
+
+// 3. Scrape the Genlayer node metrics
+prometheus.scrape "node_metrics" {
+  targets         = discovery.relabel.node_metrics.output
+  forward_to      = [prometheus.remote_write.central.receiver]
+  
+  scrape_interval = "60s"
+  scrape_timeout  = "10s"
+}
+
+// 4. Alloy Self-Monitoring Metrics
+prometheus.exporter.self "alloy" {}
+
+prometheus.scrape "alloy_self" {
+  targets         = prometheus.exporter.self.alloy.targets
+  forward_to      = [prometheus.remote_write.central.receiver]
+  scrape_interval = "60s"
+}
+
+// ==========================================
+// LOGS CONFIGURATION
+// ==========================================
+
+// 1. Remote write to Central Loki
+loki.write "central" {
+  endpoint {
+    url = "https://logs-prod-042.grafana.net/loki/api/v1/push"
+
+    basic_auth {
+      username = "1423311"
+      password = "{{ vault.external.asimov.telemetry_password }}"
+    }
+
+    batch_wait = "60s"
+    batch_size = "1MiB"
+  }
+}
+
+// 2. Discover log files and append labels
+local.file_match "node_logs" {
+  path_targets = [{
+    "__path__"       = "/opt/genlayer-asimov/log/genlayer-asimov.log",
+    "node_id"        = "Encapsulate",
+    "validator_name" = "Encapsulate",
+  }]
+}
+
+// 3. Tail log files and send to Loki
+loki.source.file "node_logs" {
+  targets    = local.file_match.node_logs.targets
+  forward_to = [loki.write.central.receiver]
+}
