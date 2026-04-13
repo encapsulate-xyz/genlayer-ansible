@@ -6,7 +6,8 @@ User={{ service_identifier }}
 Group={{ project }}
 WorkingDirectory={{ llm_home_dir }}
 EnvironmentFile={{ llm_environment_general_file_path }}
-ExecStart={{ llm_bin_dir }}/{{ service_identifier }} llm --config {{ llm_config_file_path }}
+ExecStart={{ llm_bin_dir }}/{{ service_identifier }} llm \
+    --config {{ llm_config_file_path }}
 Restart=always
 RestartSec=4
 LimitNOFILE=65536

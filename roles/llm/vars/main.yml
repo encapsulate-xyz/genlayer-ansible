@@ -3,7 +3,7 @@
 
 # config file names
 llm_config_file_name: genvm-module-llm.yaml
-llm_lua_script_file_name: genvm-greyboxing.lua
+llm_lua_script_file_name: genvm-llm-default.lua
 
 # binary names
 llm_service_default_binary_name: genvm-modules

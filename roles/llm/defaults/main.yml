@@ -4,6 +4,7 @@ llm_home_dir: /opt/{{ service_identifier }}
 
 llm_bin_dir: "{{ llm_home_dir }}/bin"
 llm_config_dir: "{{ llm_home_dir }}/config"
+llm_lib_dir: "{{ llm_home_dir }}/lib"
 llm_env_dir: "{{ llm_home_dir }}/environment"
 llm_log_dir: "{{ llm_home_dir }}/log"
 
@@ -11,6 +12,7 @@ llm_directories:
   - "{{ llm_home_dir }}"
   - "{{ llm_bin_dir }}"
   - "{{ llm_config_dir }}"
+  - "{{ llm_lib_dir }}"
   - "{{ llm_env_dir }}"
   - "{{ llm_log_dir }}"
 

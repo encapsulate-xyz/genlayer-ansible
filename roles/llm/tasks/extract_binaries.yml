@@ -35,24 +35,24 @@
 
 - name: Copy the lua script
   vars:
-    binary_subpath: "genlayer-node-linux-amd64/third_party/genvm/scripts"
+    binary_subpath: "genlayer-node-linux-amd64/third_party/genvm/config"
   ansible.builtin.copy:
     src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/{{ llm_lua_script_file_name }}"
     dest: "{{ llm_lua_script_file_path }}"
     remote_src: true
-    owner: root
-    group: root
+    owner: "{{ service_identifier }}"
+    group: "{{ service_identifier }}"
     force: true
-    mode: "0755"
+    mode: "0644"
   notify:
     - Restart service
 
-- name: Copy the share library directory script
+- name: Copy the lib directory
   vars:
     binary_subpath: "genlayer-node-linux-amd64/third_party/genvm/"
   ansible.builtin.copy:
-    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/share"
-    dest: "{{ llm_home_dir }}"
+    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/lib/"
+    dest: "{{ llm_lib_dir }}"
     remote_src: true
     owner: root
     group: root
