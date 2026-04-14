@@ -1,0 +1,36 @@
+[Unit]
+Description={{ service_identifier }}
+After=network.target
+
+[Service]
+Type=simple
+User={{ service_identifier }}
+Group={{ service_identifier }}
+WorkingDirectory={{ alloy_home_dir }}
+ExecStart={{ alloy_bin_dir }}/{{ service_identifier }} run \
+    --server.http.listen-addr 127.0.0.1:{{ alloy.ports.http_listen_port }} \
+    --storage.path {{ alloy_data_dir }} \
+    {{ alloy_config_file_path }}
+Restart=always
+RestartSec=4
+LimitNOFILE=65536
+MemoryMax=64G
+StandardOutput=append:{{ alloy_log_file_path }}
+StandardError=inherit
+
+# --- Hardening & Security ---
+NoNewPrivileges=true
+RestrictSUIDSGID=true
+LockPersonality=true
+
+# --- File System Isolation ---
+ProtectHome=true
+PrivateTmp=true
+
+# --- System Protection ---
+ProtectHostname=true
+ProtectClock=true
+ProtectKernelModules=true
+
+[Install]
+WantedBy=multi-user.target

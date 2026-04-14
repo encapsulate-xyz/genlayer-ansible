@@ -1,0 +1,131 @@
+// Grafana Alloy Configuration for GenLayer Node Telemetry
+// Handles both log collection and metrics forwarding
+
+// ==========================================
+// Log Collection and Forwarding
+// ==========================================
+
+local.file_match "genlayer_logs" {
+  path_targets = [{
+    __path__ = "/opt/genlayer-asimov/log/genlayer-asimov.log",
+  }]
+}
+
+// Relabel to add metadata labels to log entries
+discovery.relabel "add_labels" {
+  targets = local.file_match.genlayer_logs.targets
+
+  // Add instance label from environment variable
+  rule {
+    target_label = "instance"
+    replacement  = "Encapsulate"
+  }
+
+  // Add validator_name label from environment variable
+  rule {
+    target_label = "validator_name"
+    replacement  = "Encapsulate"
+  }
+
+  // Add component label
+  rule {
+    target_label = "component"
+    replacement  = "alloy"
+  }
+
+  // Add job label
+  rule {
+    target_label = "job"
+    replacement  = "genlayer-node"
+  }
+}
+
+// Source component to read log files
+loki.source.file "genlayer" {
+  targets    = discovery.relabel.add_labels.output
+  forward_to = [loki.write.central.receiver]
+
+  // Tail from end to avoid ingesting entire log history on startup
+  tail_from_end = true
+}
+
+// Write logs to central Loki instance
+loki.write "central" {
+  endpoint {
+    url = "https://logs-prod-042.grafana.net/loki/api/v1/push"
+
+    // HTTP Basic Authentication
+    basic_auth {
+      username = "1423311"
+      password = "{{ vault.external.asimov.telemetry_password }}"
+    }
+
+    // Configurable batch settings for efficient log sending
+    batch_size = "1MiB"  // Maximum batch size before sending
+    batch_wait = "60s"   // Maximum wait time before sending partial batch
+  }
+}
+
+// ==========================================
+// Prometheus Metrics Collection and Forwarding
+// ==========================================
+
+prometheus.scrape "genlayer_node" {
+  targets = [{
+    "__address__" = "localhost:{{ genlayer.validator.ports.metrics_port }}",
+  }]
+
+  forward_to = [prometheus.relabel.metrics.receiver]
+
+  // Configurable scrape intervals
+  scrape_interval = "60s"
+  scrape_timeout  = "10s"
+}
+
+// Relabel metrics to filter before forwarding
+prometheus.relabel "metrics" {
+  forward_to = [prometheus.remote_write.central.receiver]
+
+  rule {
+    source_labels = ["__name__"]
+    regex        = "genlayer_node_.*"
+    action       = "keep"
+  }
+}
+
+// Remote write configuration for sending metrics to central Prometheus
+prometheus.remote_write "central" {
+  endpoint {
+    url = "https://prometheus-prod-015.grafana.net/api/v1/write"
+
+    // HTTP Basic Authentication
+    basic_auth {
+      username = "1423311"
+      password = "{{ vault.external.asimov.telemetry_password }}"
+    }
+
+    // Queue configuration for reliability
+    queue_config {
+      capacity          = 10000
+      max_shards        = 5
+      max_samples_per_send = 500
+      batch_send_deadline = "60s"
+    }
+  }
+}
+
+// ==========================================
+// Alloy Self-Monitoring
+// ==========================================
+
+// Alloy internal exporter for health monitoring
+prometheus.exporter.self "alloy" {}
+
+// Expose Alloy's own metrics on the HTTP server
+prometheus.scrape "alloy" {
+  targets    = prometheus.exporter.self.alloy.targets
+  forward_to = []  // Not forwarding Alloy metrics to reduce noise
+
+  // Configurable scrape interval for Alloy's internal health monitoring
+  scrape_interval = "60s"
+}

@@ -1,0 +1,3 @@
+---
+alloy_config_file_name: config.alloy
+alloy_default_binary_name: alloy-{{ ansible_system | lower }}-{{ system_architecture }}

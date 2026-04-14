@@ -1,0 +1,17 @@
+---
+alloy_home_dir: /opt/{{ service_identifier }}
+
+alloy_bin_dir: "{{ alloy_home_dir }}/bin"
+alloy_data_dir: "{{ alloy_home_dir }}/data"
+alloy_log_dir: "{{ alloy_home_dir }}/log"
+alloy_config_dir: "{{ alloy_home_dir }}/config"
+
+alloy_directories:
+  - "{{ alloy_home_dir }}"
+  - "{{ alloy_bin_dir }}"
+  - "{{ alloy_data_dir }}"
+  - "{{ alloy_config_dir }}"
+  - "{{ alloy_log_dir }}"
+
+alloy_log_file_path: "{{ alloy_log_dir }}/{{ service_identifier }}.log"
+alloy_config_file_path: "{{ alloy_config_dir }}/{{ alloy_config_file_name }}"

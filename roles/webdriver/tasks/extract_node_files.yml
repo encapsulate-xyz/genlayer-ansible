@@ -1,0 +1,141 @@
+---
+- name: Create docker container and copy node files
+  vars:
+    container_name: "{{ service_identifier }}"
+  block:
+    - name: Create temporary webdriver container for binary extraction
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        image: "{{ genlayer.webdriver.source_url }}:{{ genlayer.webdriver.version }}"
+        state: present
+        recreate: true
+
+    - name: Copy node files
+      ansible.builtin.shell: >
+        docker cp {{ container_name }}:/src/prj/. {{ webdriver_bin_dir }}/
+      args:
+        executable: /bin/bash
+      register: copy_result
+      changed_when: copy_result.rc == 0
+      failed_when:
+        - copy_result.rc != 0
+        - "'No such container' in copy_result.stderr"
+      notify:
+        - Restart service
+
+    - name: Copy browser binary
+      ansible.builtin.shell: >
+        docker cp {{ container_name }}:/usr/bin/chromium {{ webdriver_bin_dir }}/chromium
+      args:
+        executable: /bin/bash
+      register: copy_result
+      changed_when: copy_result.rc == 0
+      failed_when:
+        - copy_result.rc != 0
+        - "'No such container' in copy_result.stderr"
+      notify:
+        - Restart service
+
+    - name: Copy chromium.d directory
+      ansible.builtin.shell: >
+        docker cp {{ container_name }}:/etc/chromium.d/. {{ webdriver_lib_dir }}/chromium.d/
+      args:
+        executable: /bin/bash
+      register: copy_result
+      changed_when: copy_result.rc == 0
+      failed_when:
+        - copy_result.rc != 0
+        - "'No such container' in copy_result.stderr"
+      notify:
+        - Restart service
+
+    - name: Copy browser libs directory
+      ansible.builtin.shell: >
+        docker cp {{ container_name }}:/usr/lib/chromium/. {{ webdriver_lib_dir }}/chromium/
+      args:
+        executable: /bin/bash
+      register: copy_result
+      changed_when: copy_result.rc == 0
+      failed_when:
+        - copy_result.rc != 0
+        - "'No such container' in copy_result.stderr"
+      notify:
+        - Restart service
+
+    - name: Copy specific missing libraries from container
+      ansible.builtin.shell: >
+        docker cp -L {{ container_name }}:/usr/lib/x86_64-linux-gnu/{{ item }} {{ webdriver_lib_dir }}/
+      args:
+        executable: /bin/bash
+      loop:
+        - libopenh264.so.7
+        - libdouble-conversion.so.3
+        - libjpeg.so.62
+        - libharfbuzz-subset.so.0
+        - libopus.so.0
+        - libdav1d.so.6
+        - libpulse.so.0
+        - libFLAC.so.12
+        - libminizip.so.1
+        - pulseaudio/libpulsecommon-16.1.so
+        - libogg.so.0
+        - libsndfile.so.1
+        - libasyncns.so.0
+        - libvorbis.so.0
+        - libvorbisenc.so.2
+        - libmpg123.so.0
+        - libmp3lame.so.0
+      register: copy_result
+      changed_when: copy_result.rc == 0
+      failed_when:
+        - copy_result.rc != 0
+        - "'No such container' in copy_result.stderr"
+      notify:
+        - Restart service
+
+    - name: Set ownership for bin directory
+      ansible.builtin.file:
+        path: "{{ webdriver_bin_dir }}"
+        owner: "{{ service_identifier }}"
+        group: "{{ service_identifier }}"
+        recurse: true
+
+    - name: Ensure browser binary has the correct permissions
+      ansible.builtin.file:
+        path: "{{ webdriver_bin_dir }}/chromium"
+        owner: root
+        group: root
+        mode: "0755"
+      notify:
+        - Restart service
+
+  always:
+    - name: Remove webdriver container
+      community.docker.docker_container:
+        name: "{{ container_name }}"
+        state: absent
+
+- name: Update Chromium path in files
+  ansible.builtin.replace:
+    path: "{{ item }}"
+    regexp: '/usr/bin/chromium'
+    replace: '{{ webdriver_bin_dir }}/chromium'
+  loop: 
+    - "{{ webdriver_bin_dir }}/src/browser.ts"    
+    - "{{ webdriver_bin_dir }}/dist/browser.js"
+
+- name: Update Chromium libs path in files
+  ansible.builtin.replace:
+    path: "{{ item }}"
+    regexp: '/etc/chromium.d'
+    replace: '{{ webdriver_lib_dir }}/chromium.d'
+  loop: 
+    - "{{ webdriver_bin_dir }}/chromium"    
+
+- name: Update Chromium libs path in files
+  ansible.builtin.replace:
+    path: "{{ item }}"
+    regexp: '/usr/lib'
+    replace: '{{ webdriver_lib_dir }}'
+  loop: 
+    - "{{ webdriver_bin_dir }}/chromium" 

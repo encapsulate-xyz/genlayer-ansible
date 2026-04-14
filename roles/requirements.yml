@@ -1,0 +1,5 @@
+---
+roles:
+  - name: morgangraphics.ansible-role-nvm
+    src: morgangraphics.ansible-role-nvm
+    version: v2.0.0

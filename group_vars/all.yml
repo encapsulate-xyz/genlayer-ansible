@@ -16,6 +16,9 @@ default_node_types:
 
 tmp_dir: /tmp
 
+nvm:
+  path: /opt/nvm
+
 go:
   root: /usr/local/go
   path: "{{ tmp_dir }}/go"
@@ -41,3 +44,10 @@ genlayer:
   manager:
     ports:
       listen_port: 3999
+
+alloy:
+  service_identifier_suffix: alloy
+  source_url: https://github.com/grafana/alloy/releases/download
+  file_extension: zip
+  ports:
+    http_listen_port: 9086

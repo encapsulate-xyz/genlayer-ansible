@@ -5,8 +5,10 @@ Description={{ service_identifier }}
 User={{ service_identifier }}
 Group={{ project }}
 WorkingDirectory={{ webdriver_home_dir }}
-ExecStart=java -jar {{ webdriver_bin_dir }}/{{ service_identifier }} standalone -I firefox \
---port {{ genlayer.webdriver.ports.listen_port }} --host 0.0.0.0
+EnvironmentFile={{ webdriver_environment_general_file_path }}
+ExecStart=/bin/bash -c 'exec node {{ webdriver_bin_dir }}/dist/index.js \
+--port {{ genlayer.webdriver.ports.listen_port }} \
+| /usr/bin/ts "[%%Y-%%m-%%d %%H:%%M:%%S]"'
 Restart=always
 RestartSec=4
 LimitNOFILE=65536
