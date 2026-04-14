@@ -1,9 +1,0 @@
----
-# maintains file name, binary names, and anything which is not a directory or path
-
-# config file names
-manager_config_file_name: genvm-manager.yaml
-manager_manifest_file_name: manifest.yaml
-
-# binary names
-manager_service_default_binary_name: genvm-modules

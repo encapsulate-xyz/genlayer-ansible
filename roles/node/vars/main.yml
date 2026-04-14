@@ -9,3 +9,5 @@ node_service_default_binary_name: genlayernode
 
 # environment file names
 node_environment_secret_file_name: "{{ service_identifier }}.secrets.env"
+
+node_operator_key_file_name: operator.json
