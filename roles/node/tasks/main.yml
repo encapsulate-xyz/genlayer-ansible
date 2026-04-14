@@ -22,15 +22,13 @@
     src: "{{ env }}/config.yaml.j2"
     dest: "{{ node_config_file_path }}"
     owner: "{{ service_identifier }}"
-    group: "{{ service_identifier }}"
+    group: "{{ project }}"
     mode: "0644"
   notify:
     - Restart service
 
 - name: Fetch secrets from HCP Vault and save to files
-  when:
-    - type == 'validator'
-    - fetch_vault_secrets | default(false) | bool
+  when: fetch_vault_secrets | default(false) | bool
   block:
     - name: Fetch secret environment file
       ansible.builtin.include_tasks: tasks/get_and_save_vault_secret.yml
@@ -38,6 +36,34 @@
         vault_secret_source_path: "{{ project }}/{{ org }}/{{ type }}/{{ node_environment_secret_file_name }}"
         secret_destination_path: "{{ node_environment_secret_file_path }}"
         secret_type: environment
+
+    - name: Fetch operator key file
+      ansible.builtin.include_tasks: tasks/get_and_save_vault_secret.yml
+      vars:
+        vault_secret_source_path: "{{ project }}/{{ org }}/{{ type }}/{{ node_operator_key_file_name }}"
+        secret_destination_path: "{{ node_operator_key_file_path }}"
+        secret_type: json
+
+    - name: Import GenLayer operator account keystore
+      ansible.builtin.command:
+        cmd: >
+          {{ node_bin_dir }}/{{ service_identifier }} account import 
+          --password "{{ lookup('env', 'OPERATOR_ACCOUNT_PASSWORD') }}" 
+          --passphrase "{{ lookup('env', 'OPERATOR_ACCOUNT_PASSWORD') }}" 
+          --path "{{ node_operator_key_file_path }}" 
+          -c "{{ node_config_file_path }}" 
+          --setup
+        chdir: "{{ node_home_dir }}"
+      no_log: true
+      notify:
+        - Restart service
+
+    - name: Set ownership for data directory
+      ansible.builtin.file:
+        path: "{{ node_data_dir }}"
+        owner: "{{ service_identifier }}"
+        group: "{{ project }}"
+        recurse: true
 
 - name: Copy systemd service file
   ansible.builtin.template:

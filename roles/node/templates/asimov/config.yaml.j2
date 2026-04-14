@@ -47,6 +47,8 @@ merkletree:
     maxdepth: 16
     dbpath: {{ node_merkle_tree_dir }}
 genvm:
+    root_dir: {{ node_home_dir }}/third_party/genvm
+    start_manager: true
     manager_url: http://127.0.0.1:{{ genlayer.manager.ports.listen_port }}
     permits: 8
     sync_wait_timeout: 20s
@@ -64,7 +66,7 @@ metrics:
             simulated_rx_bytes_per_process: 1024
             simulated_tx_bytes_per_process: 512
         webdriver:
-            enabled: true
+            enabled: false
             interval: 15s
             simulated_rx_bytes_per_process: 1024
             simulated_tx_bytes_per_process: 512

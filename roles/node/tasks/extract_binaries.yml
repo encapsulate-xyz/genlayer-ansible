@@ -17,7 +17,6 @@
     remote_src: true
     owner: root
     group: root
-    mode: "0755"
 
 - name: Copy the binary file
   vars:
@@ -33,7 +32,28 @@
   notify:
     - Restart service
 
+- name: Copy the genvm related folder
+  vars:
+    binary_subpath: "genlayer-node-linux-amd64"
+  ansible.builtin.copy:
+    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/third_party"
+    dest: "{{ node_home_dir }}"
+    remote_src: true
+    owner: "{{ service_identifier }}"
+    group: "{{ project }}"
+    force: true
+  notify:
+    - Restart service
+
 - name: Clean up the temporary files in /tmp
   ansible.builtin.file:
     path: "{{ tmp_dir }}/{{ service_identifier }}"
     state: absent
+
+- name: Run GenVM setup script to patch runners
+  ansible.builtin.command: python3 ./third_party/genvm/bin/setup.py
+  args:
+    chdir: "{{ node_home_dir }}"
+  register: genvm_setup_result
+  changed_when: genvm_setup_result.rc == 0
+  when: setup_genvm | default(false) | bool

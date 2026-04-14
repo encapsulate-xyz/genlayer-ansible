@@ -5,6 +5,7 @@ node_home_dir: /opt/{{ service_identifier }}
 node_bin_dir: "{{ node_home_dir }}/bin"
 node_config_dir: "{{ node_home_dir }}/config"
 node_data_dir: "{{ node_home_dir }}/data"
+node_key_dir: "{{ node_home_dir }}/key"
 node_log_dir: "{{ node_home_dir }}/log"
 node_env_dir: "{{ node_home_dir }}/environment"
 
@@ -17,6 +18,7 @@ node_directories:
   - "{{ node_bin_dir }}"
   - "{{ node_config_dir }}"
   - "{{ node_data_dir }}"
+  - "{{ node_key_dir }}"
   - "{{ node_env_dir }}"
   - "{{ node_log_dir }}"
   - "{{ node_merkle_dir }}"
@@ -28,3 +30,4 @@ node_config_file_path: "{{ node_config_dir }}/{{ node_config_file_name }}"
 node_log_file_path: "{{ node_log_dir }}/{{ service_identifier }}.log"
 
 node_environment_secret_file_path: "{{ node_env_dir }}/{{ node_environment_secret_file_name }}"
+node_operator_key_file_path: "{{ node_key_dir }}/{{ node_operator_key_file_name }}"
