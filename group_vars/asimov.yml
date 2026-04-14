@@ -7,11 +7,5 @@ genlayer:
   operator_address: "0x144398850d75ae3b75930efc7537e8ea99364af0"
   validator:
     version: v0.5.8
-  llm:
-    version: v0.5.8
-  web:
-    version: v0.5.8
-  manager:
-    version: v0.5.8
   webdriver:
     version: 0.0.10
