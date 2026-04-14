@@ -9,8 +9,18 @@
 - name: Include install dependencies task
   ansible.builtin.include_tasks: install_dependencies.yml
 
-- name: Include extract jar file task
-  ansible.builtin.include_tasks: extract_jar_file.yml
+- name: Include extract node files task
+  ansible.builtin.include_tasks: extract_node_files.yml
+
+- name: Copy general environment file
+  ansible.builtin.template:
+    src: "{{ env }}/general.env.j2"
+    dest: "{{ webdriver_environment_general_file_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - Restart service
 
 - name: Copy systemd service file
   ansible.builtin.template:

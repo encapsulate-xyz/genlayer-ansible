@@ -16,6 +16,9 @@ default_node_types:
 
 tmp_dir: /tmp
 
+nvm:
+  path: /opt/nvm
+
 go:
   root: /usr/local/go
   path: "{{ tmp_dir }}/go"
