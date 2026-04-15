@@ -23,3 +23,4 @@
     - docker-buildx-plugin
     - docker-compose-plugin
     - musl
+    - moreutils
