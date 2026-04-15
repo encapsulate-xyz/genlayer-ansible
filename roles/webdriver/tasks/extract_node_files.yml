@@ -98,7 +98,7 @@
       ansible.builtin.file:
         path: "{{ webdriver_bin_dir }}"
         owner: "{{ service_identifier }}"
-        group: "{{ service_identifier }}"
+        group: "{{ project }}"
         recurse: true
 
     - name: Ensure browser binary has the correct permissions
