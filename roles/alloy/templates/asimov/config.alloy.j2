@@ -96,7 +96,7 @@ prometheus.relabel "metrics" {
 // Remote write configuration for sending metrics to central Prometheus
 prometheus.remote_write "central" {
   endpoint {
-    url = "https://prometheus-prod-015.grafana.net/api/v1/write"
+    url = "https://prometheus-prod-66-prod-us-east-3.grafana.net/api/prom/push"
 
     // HTTP Basic Authentication
     basic_auth {
