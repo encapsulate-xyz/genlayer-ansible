@@ -50,6 +50,14 @@
     path: "{{ tmp_dir }}/{{ service_identifier }}"
     state: absent
 
+- name: Install Dependencies
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: true
+  loop:
+    - python3-venv
+
 - name: Run GenVM setup script to patch runners
   ansible.builtin.command: python3 ./third_party/genvm/bin/setup.py
   args:
