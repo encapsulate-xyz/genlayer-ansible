@@ -8,15 +8,6 @@ all:
       hosts:
         ts.validator.genlayer.asimov.encapsulate.xyz:
           type: validator
-        llm_host:
-          ansible_host: ts.validator.genlayer.asimov.encapsulate.xyz
-          type: llm
         webdriver_host:
           ansible_host: ts.validator.genlayer.asimov.encapsulate.xyz
           type: webdriver
-        web_host:
-          ansible_host: ts.validator.genlayer.asimov.encapsulate.xyz
-          type: web
-        manager_host:
-          ansible_host: ts.validator.genlayer.asimov.encapsulate.xyz
-          type: manager

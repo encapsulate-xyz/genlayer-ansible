@@ -38,7 +38,7 @@
 
     - name: Copy chromium.d directory
       ansible.builtin.shell: >
-        docker cp {{ container_name }}:/etc/chromium.d/. {{ webdriver_lib_dir }}/chromium.d/
+        docker cp -L {{ container_name }}:/etc/chromium.d/. {{ webdriver_lib_dir }}/chromium.d/
       args:
         executable: /bin/bash
       register: copy_result
@@ -51,7 +51,7 @@
 
     - name: Copy browser libs directory
       ansible.builtin.shell: >
-        docker cp {{ container_name }}:/usr/lib/chromium/. {{ webdriver_lib_dir }}/chromium/
+        docker cp -L {{ container_name }}:/usr/lib/chromium/. {{ webdriver_lib_dir }}/chromium/
       args:
         executable: /bin/bash
       register: copy_result
@@ -85,6 +85,7 @@
         - libvorbisenc.so.2
         - libmpg123.so.0
         - libmp3lame.so.0
+        - libopenjp2.so.7
       register: copy_result
       changed_when: copy_result.rc == 0
       failed_when:
