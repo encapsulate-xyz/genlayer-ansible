@@ -28,5 +28,5 @@
     path: "{{ log_file_path }}"
     state: touch
     owner: "{{ service_identifier }}"
-    group: "{{ service_identifier }}"
+    group: "{{ project }}"
     mode: "0644"
