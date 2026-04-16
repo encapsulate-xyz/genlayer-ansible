@@ -8,41 +8,16 @@
 local.file_match "genlayer_logs" {
   path_targets = [{
     __path__ = "/opt/genlayer-asimov/log/genlayer-asimov.log",
+    "instance"       = "Encapsulate",
+    "validator_name" = "Encapsulate",
+    "component"      = "alloy",
+    "job"            = "genlayer-node",
   }]
-}
-
-// Relabel to add metadata labels to log entries
-discovery.relabel "add_labels" {
-  targets = local.file_match.genlayer_logs.targets
-
-  // Add instance label from environment variable
-  rule {
-    target_label = "instance"
-    replacement  = "Encapsulate"
-  }
-
-  // Add validator_name label from environment variable
-  rule {
-    target_label = "validator_name"
-    replacement  = "Encapsulate"
-  }
-
-  // Add component label
-  rule {
-    target_label = "component"
-    replacement  = "alloy"
-  }
-
-  // Add job label
-  rule {
-    target_label = "job"
-    replacement  = "genlayer-node"
-  }
 }
 
 // Source component to read log files
 loki.source.file "genlayer" {
-  targets    = discovery.relabel.add_labels.output
+  targets    = local.file_match.genlayer_logs.targets
   forward_to = [loki.write.central.receiver]
 
   // Tail from end to avoid ingesting entire log history on startup
