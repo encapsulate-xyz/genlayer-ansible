@@ -8,20 +8,29 @@
 local.file_match "genlayer_logs" {
   path_targets = [{
     __path__ = "/opt/genlayer-asimov/log/genlayer-asimov.log",
-    "instance"       = "Encapsulate",
-    "validator_name" = "Encapsulate",
-    "component"      = "alloy",
-    "job"            = "genlayer-node",
   }]
 }
 
 // Source component to read log files
 loki.source.file "genlayer" {
   targets    = local.file_match.genlayer_logs.targets
-  forward_to = [loki.write.central.receiver]
+  forward_to = [loki.process.add_labels.receiver]
 
   // Tail from end to avoid ingesting entire log history on startup
   tail_from_end = true
+}
+
+loki.process "add_labels" {
+  forward_to = [loki.write.central.receiver]
+
+  stage.labels {
+    values = {
+      instance       = "Encapsulate"
+      validator_name = "Encapsulate"
+      component      = "alloy"
+      job            = "genlayer-node"
+    }
+  }
 }
 
 // Write logs to central Loki instance
