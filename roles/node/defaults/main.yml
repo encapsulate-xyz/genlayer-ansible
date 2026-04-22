@@ -31,3 +31,5 @@ node_log_file_path: "{{ node_log_dir }}/{{ service_identifier }}.log"
 
 node_environment_secret_file_path: "{{ node_env_dir }}/{{ node_environment_secret_file_name }}"
 node_operator_key_file_path: "{{ node_key_dir }}/{{ node_operator_key_file_name }}"
+
+node_llm_config_file_path: "{{ node_home_dir }}/third_party/genvm/config/{{ node_llm_config_file_name }}"
