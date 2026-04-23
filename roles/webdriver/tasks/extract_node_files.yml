@@ -67,25 +67,7 @@
         docker cp -L {{ container_name }}:/usr/lib/x86_64-linux-gnu/{{ item }} {{ webdriver_lib_dir }}/
       args:
         executable: /bin/bash
-      loop:
-        - libopenh264.so.7
-        - libdouble-conversion.so.3
-        - libjpeg.so.62
-        - libharfbuzz-subset.so.0
-        - libopus.so.0
-        - libdav1d.so.6
-        - libpulse.so.0
-        - libFLAC.so.12
-        - libminizip.so.1
-        - pulseaudio/libpulsecommon-16.1.so
-        - libogg.so.0
-        - libsndfile.so.1
-        - libasyncns.so.0
-        - libvorbis.so.0
-        - libvorbisenc.so.2
-        - libmpg123.so.0
-        - libmp3lame.so.0
-        - libopenjp2.so.7
+      loop: "{{ webdriver_missing_libraries }}"
       register: copy_result
       changed_when: copy_result.rc == 0
       failed_when:

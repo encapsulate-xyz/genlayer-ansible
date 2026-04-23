@@ -2,3 +2,49 @@
 # maintains file name, binary names, and anything which is not a directory or path
 
 webdriver_environment_general_file_name: "{{ service_identifier }}.env"
+
+webdriver_missing_libraries:
+  - libopenh264.so.7
+  - libdouble-conversion.so.3
+  - libjpeg.so.62
+  - libharfbuzz-subset.so.0
+  - libopus.so.0
+  - libdav1d.so.6
+  - libpulse.so.0
+  - libFLAC.so.12
+  - libminizip.so.1
+  - pulseaudio/libpulsecommon-16.1.so
+  - libogg.so.0
+  - libsndfile.so.1
+  - libasyncns.so.0
+  - libvorbis.so.0
+  - libvorbisenc.so.2
+  - libmpg123.so.0
+  - libmp3lame.so.0
+  - libopenjp2.so.7
+  - libnspr4.so
+  - libnss3.so
+  - libnssutil3.so
+  - libsmime3.so
+  - libatk-1.0.so.0
+  - libatk-bridge-2.0.so.0
+  - libcups.so.2
+  - libfontconfig.so.1
+  - libdouble-conversion.so.3
+  - libjpeg.so.62
+  - libharfbuzz.so.0
+  - libharfbuzz-subset.so.0
+  - libatspi.so.0
+  - libXcomposite.so.1
+  - libXdamage.so.1
+  - libXfixes.so.3
+  - libXrandr.so.2
+  - libgbm.so.1
+  - libcairo.so.2
+  - libpango-1.0.so.0
+  - libasound.so.2
+  - libpulse.so.0
+  - libFLAC.so.12
+  - libminizip.so.1
+  - libopenjp2.so.7
+  - liblcms2.so.2
