@@ -1,0 +1,20 @@
+[Unit]
+Description={{ service_identifier }}
+
+[Service]
+User={{ service_identifier }}
+Group={{ project }}
+WorkingDirectory={{ webdriver_home_dir }}
+EnvironmentFile={{ webdriver_environment_general_file_path }}
+ExecStart=/bin/bash -c 'exec node {{ webdriver_bin_dir }}/dist/index.js \
+--port {{ genlayer.webdriver.ports.listen_port }} \
+| /usr/bin/ts "[%%Y-%%m-%%d %%H:%%M:%%S]"'
+Restart=always
+RestartSec=4
+LimitNOFILE=65536
+MemoryMax=64G
+StandardOutput=append:{{ webdriver_log_file_path }}
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

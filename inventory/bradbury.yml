@@ -1,0 +1,13 @@
+---
+# maintains asimov inventory grouped by project names
+all:
+  vars:
+    env: bradbury
+  children:
+    genlayer:
+      hosts:
+        ts.validator.genlayer.bradbury.encapsulate.xyz:
+          type: validator
+        webdriver_host:
+          ansible_host: ts.validator.genlayer.bradbury.encapsulate.xyz
+          type: webdriver
