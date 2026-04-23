@@ -59,3 +59,5 @@ webdriver_missing_libraries:
   - libXrender.so.1
   - libthai.so.0
   - libX11-xcb.so.1
+  - libgraphite2.so.3
+  - libdatrie.so.1
