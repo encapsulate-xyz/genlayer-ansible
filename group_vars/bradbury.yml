@@ -9,6 +9,3 @@ genlayer:
     version: v0.5.8
   webdriver:
     version: 0.0.10
-  llm:
-    ports:
-      listen_port: 3033
