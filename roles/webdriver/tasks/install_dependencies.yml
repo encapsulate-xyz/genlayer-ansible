@@ -24,3 +24,4 @@
     - docker-compose-plugin
     - musl
     - moreutils
+    - libnss3
