@@ -22,42 +22,42 @@ webdriver_missing_libraries:
   - libmpg123.so.0
   - libmp3lame.so.0
   - libopenjp2.so.7
-  - libnspr4.so
-  - libnss3.so
-  - libnssutil3.so
-  - libsmime3.so
-  - libatk-1.0.so.0
-  - libatk-bridge-2.0.so.0
-  - libcups.so.2
-  - libfontconfig.so.1
-  - libatspi.so.0
-  - libXcomposite.so.1
-  - libXdamage.so.1
-  - libXfixes.so.3
-  - libXrandr.so.2
-  - libgbm.so.1
-  - libcairo.so.2
-  - libpango-1.0.so.0
-  - libasound.so.2
-  - libpulse.so.0
-  - libFLAC.so.12
-  - libminizip.so.1
-  - libopenjp2.so.7
-  - liblcms2.so.2
-  - libharfbuzz.so.0
-  - libplc4.so
-  - libplds4.so
-  - libavahi-common.so.3
-  - libavahi-client.so.3
-  - libharfbuzz.so.0
-  - libXi.so.6
-  - libXrender.so.1
-  - libwayland-server.so.0
-  - libpixman-1.so.0
-  - libxcb-shm.so.0
-  - libxcb-render.so.0
-  - libXrender.so.1
-  - libthai.so.0
-  - libX11-xcb.so.1
-  - libgraphite2.so.3
-  - libdatrie.so.1
+  # - libnspr4.so
+  # - libnss3.so
+  # - libnssutil3.so
+  # - libsmime3.so
+  # - libatk-1.0.so.0
+  # - libatk-bridge-2.0.so.0
+  # - libcups.so.2
+  # - libfontconfig.so.1
+  # - libatspi.so.0
+  # - libXcomposite.so.1
+  # - libXdamage.so.1
+  # - libXfixes.so.3
+  # - libXrandr.so.2
+  # - libgbm.so.1
+  # - libcairo.so.2
+  # - libpango-1.0.so.0
+  # - libasound.so.2
+  # - libpulse.so.0
+  # - libFLAC.so.12
+  # - libminizip.so.1
+  # - libopenjp2.so.7
+  # - liblcms2.so.2
+  # - libharfbuzz.so.0
+  # - libplc4.so
+  # - libplds4.so
+  # - libavahi-common.so.3
+  # - libavahi-client.so.3
+  # - libharfbuzz.so.0
+  # - libXi.so.6
+  # - libXrender.so.1
+  # - libwayland-server.so.0
+  # - libpixman-1.so.0
+  # - libxcb-shm.so.0
+  # - libxcb-render.so.0
+  # - libXrender.so.1
+  # - libthai.so.0
+  # - libX11-xcb.so.1
+  # - libgraphite2.so.3
+  # - libdatrie.so.1
