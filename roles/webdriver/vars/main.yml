@@ -23,9 +23,9 @@ webdriver_missing_libraries:
   - libmp3lame.so.0
   - libopenjp2.so.7
   - libnspr4.so
-  - libnss3.so
-  - libnssutil3.so
-  - libsmime3.so
+  # - libnss3.so
+  # - libnssutil3.so
+  # - libsmime3.so
   - libatk-1.0.so.0
   - libatk-bridge-2.0.so.0
   - libcups.so.2
