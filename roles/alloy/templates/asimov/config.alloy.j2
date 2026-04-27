@@ -8,7 +8,7 @@
 local.file_match "genlayer_logs" {
   path_targets = [{
     __path__       = "/opt/genlayer-asimov/log/genlayer-asimov.log",
-    instance       = "Encapsulate",
+    instance       = "Encapsulate-Asimov",
     validator_name = "Encapsulate",
     component      = "alloy",
     job            = "genlayer-node",
@@ -50,7 +50,7 @@ loki.write "central" {
 prometheus.scrape "genlayer_node" {
   targets = [{
     "__address__" = "localhost:{{ genlayer.validator.ports.metrics_port }}",
-    "instance"       = "Encapsulate",
+    "instance"       = "Encapsulate-Asimov",
     "validator_name" = "Encapsulate",
   }]
 
