@@ -6,6 +6,6 @@ genlayer:
   validator_address: "0x470AAa7DE37ff3E1C2b38eD9096263ca0d541F21"
   operator_address: "0x8251f3170c9f16595657563e384802e1534e3179"
   validator:
-    version: v0.5.8
+    version: v0.5.9
   webdriver:
     version: 0.0.10
