@@ -6,7 +6,8 @@ lua_script_path: {{ node_home_dir }}/third_party/genvm/config/genvm-llm-greybox.
 vm_count: 6
 lua_path: {{ node_home_dir }}/third_party/genvm/lib/genvm-lua/?.lua
 signer_url: "http://localhost:{{ genlayer.validator.ports.admin_port }}/genvm/sign"
-signer_headers: {}
+signer_headers:
+  x-admin-auth: "#{admin_token}"
 
 threads: 4
 blocking_threads: 16
