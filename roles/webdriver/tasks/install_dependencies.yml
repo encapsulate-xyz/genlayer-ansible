@@ -11,17 +11,17 @@
     state: present
     enabled: true
 
-- name: Install Docker
-  ansible.builtin.apt:
-    name: "{{ item }}"
-    state: present
-    update_cache: true
-  loop:
-    - docker-ce
-    - docker-ce-cli
-    - containerd.io
-    - docker-buildx-plugin
-    - docker-compose-plugin
-    - musl
-    - moreutils
-    - libnss3
+# - name: Install Docker
+#   ansible.builtin.apt:
+#     name: "{{ item }}"
+#     state: present
+#     update_cache: true
+#   loop:
+#     - docker-ce
+#     - docker-ce-cli
+#     - containerd.io
+#     - docker-buildx-plugin
+#     - docker-compose-plugin
+#     - musl
+#     - moreutils
+#     - libnss3
