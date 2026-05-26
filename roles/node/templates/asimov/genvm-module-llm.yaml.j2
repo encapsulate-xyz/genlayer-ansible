@@ -57,7 +57,7 @@ backends:
           greybox: { text: 5 }
 
   heurist:
-    enabled: true
+    enabled: false
     host: https://llm-gateway.heurist.xyz
     provider: openai-compatible
     key: ${ENV[HEURISTKEY]}
@@ -79,7 +79,7 @@ backends:
         supports_image: false # this model does not support images
 
   ionet:
-    enabled: false
+    enabled: true
     host: https://api.intelligence.io.solutions/api
     provider: openai-compatible
     key: ${ENV[IOINTELLIGENCEKEY]}
