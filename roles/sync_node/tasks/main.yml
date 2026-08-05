@@ -1,0 +1,40 @@
+---
+- name: Stop service
+  ansible.builtin.systemd:
+    name: "{{ service_identifier }}"
+    state: stopped
+
+- name: Delete data folder
+  ansible.builtin.file:
+    path: "{{ sync_node_genlayer_db_dir }}"
+    state: absent
+
+- name: Create data directories
+  ansible.builtin.file:
+    path: "{{ sync_node_genlayer_db_dir }}"
+    state: directory
+    owner: "{{ service_identifier }}"
+    group: "{{ service_identifier }}"
+    mode: "0755"
+
+- name: Download and Extract zst format snapshot
+  ansible.builtin.shell: |
+    set -o pipefail
+    curl -o - -L {{ snapshot_url | default(vars[project].snapshot_url) }} | zstd -d | tar -xf - -C {{ sync_node_genlayer_db_dir }}
+  async: 10000
+  poll: 10
+  args:
+    executable: /bin/bash
+    creates: "{{ sync_node_genlayer_db_dir }}/CURRENT"
+
+- name: Set ownership for data directory
+  ansible.builtin.file:
+    path: "{{ sync_node_genlayer_db_dir }}"
+    owner: "{{ service_identifier }}"
+    group: "{{ service_identifier }}"
+    recurse: true
+
+- name: Restart service
+  ansible.builtin.systemd:
+    name: "{{ service_identifier }}"
+    state: restarted

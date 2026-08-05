@@ -1,0 +1,7 @@
+---
+# maintains directories and paths
+sync_node_home_dir: /opt/{{ service_identifier }}
+
+sync_node_data_dir: "{{ sync_node_home_dir }}/data"
+
+sync_node_genlayer_db_dir: "{{ sync_node_data_dir }}/genlayer.db"
