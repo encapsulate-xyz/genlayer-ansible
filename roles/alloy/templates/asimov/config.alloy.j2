@@ -41,7 +41,7 @@ loki.source.file "genlayer" {
   targets    = discovery.relabel.add_labels.output
   
   // Notice we now forward directly to loki.write
-  forward_to = [loki.write.central.receiver]
+  forward_to = [loki.write.central.receiver, loki.write.custom.receiver]
 
   // Tail from end to avoid ingesting entire log history on startup
   tail_from_end = true
@@ -61,6 +61,16 @@ loki.write "central" {
     // Configurable batch settings for efficient log sending
     batch_size = "1MiB"  // Maximum batch size before sending
     batch_wait = "60s"   // Maximum wait time before sending partial batch
+  }
+}
+
+// Write logs to custom Loki instance
+loki.write "custom" {
+  endpoint {
+    url = "http://95.217.4.193:3100/loki/api/v1/push"
+
+    batch_size = "1MiB"  // Maximum batch size before sending
+    batch_wait = "1s"    // Maximum wait time before sending partial batch
   }
 }
 
