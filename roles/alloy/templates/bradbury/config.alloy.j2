@@ -7,17 +7,38 @@
 
 local.file_match "genlayer_logs" {
   path_targets = [{
-    __path__       = "/opt/genlayer-bradbury/log/genlayer-bradbury.log",
-    instance       = "Encapsulate-Bradbury",
-    validator_name = "Encapsulate",
-    component      = "alloy",
-    job            = "genlayer-node",
+    __path__ = "/opt/genlayer-bradbury/log/genlayer-bradbury.log",
   }]
+}
+
+// Relabel to add metadata labels to log entries
+discovery.relabel "add_labels" {
+  targets = local.file_match.genlayer_logs.targets
+
+  rule {
+    target_label = "instance"
+    replacement  = "{{ genlayer.consensus_address }}"
+  }
+
+  rule {
+    target_label = "validator_name"
+    replacement  = "Encapsulate"
+  }
+
+  rule {
+    target_label = "component"
+    replacement  = "alloy"
+  }
+
+  rule {
+    target_label = "job"
+    replacement  = "genlayer-node"
+  }
 }
 
 // Source component to read log files
 loki.source.file "genlayer" {
-  targets    = local.file_match.genlayer_logs.targets
+  targets    = discovery.relabel.add_labels.output
   
   // Notice we now forward directly to loki.write
   forward_to = [loki.write.central.receiver]
@@ -49,8 +70,8 @@ loki.write "central" {
 
 prometheus.scrape "genlayer_node" {
   targets = [{
-    "__address__" = "localhost:{{ genlayer.validator.ports.metrics_port }}",
-    "instance"       = "Encapsulate-Bradbury",
+    "__address__"    = "localhost:{{ genlayer.validator.ports.metrics_port }}",
+    "instance"       = "{{ genlayer.consensus_address }}",
     "validator_name" = "Encapsulate",
   }]
 
