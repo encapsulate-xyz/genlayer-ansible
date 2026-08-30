@@ -71,7 +71,7 @@ loki.write "central" {
 prometheus.scrape "genlayer_node" {
   targets = [{
     "__address__"    = "localhost:{{ genlayer.validator.ports.metrics_port }}",
-    "instance"       = "{{ genlayer.consensus_address }}",
+    "instance"       = "{{ genlayer.validator_address }}",
     "validator_name" = "Encapsulate",
   }]
 
