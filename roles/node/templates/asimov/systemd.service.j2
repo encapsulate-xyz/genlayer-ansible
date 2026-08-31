@@ -4,6 +4,11 @@ Description={{ service_identifier }}
 [Service]
 User={{ service_identifier }}
 Group={{ project }}
+# UMask=027 sets default file permissions to 0640 (-rw-r-----).
+# This allows the node to write to node.log, while granting read-only 
+# access to the 'genlayer' group. This is specifically required so Alloy 
+# can tail the logs for Loki, while locking out all other users for security.
+UMask=027
 WorkingDirectory={{ node_home_dir }}
 EnvironmentFile={{ node_environment_secret_file_path }}
 ExecStart={{ node_bin_dir }}/{{ service_identifier }} run \
