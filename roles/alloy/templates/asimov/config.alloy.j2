@@ -17,7 +17,7 @@ discovery.relabel "add_labels" {
 
   rule {
     target_label = "instance"
-    replacement  = "{{ genlayer.consensus_address }}"
+    replacement  = "{{ genlayer.validator_address }}"
   }
 
   rule {

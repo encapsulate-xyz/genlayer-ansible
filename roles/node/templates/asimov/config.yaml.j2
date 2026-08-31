@@ -1,10 +1,10 @@
 datadir: {{ node_data_dir }}
 logging:
     level: INFO
-    json: false
+    json: true
     file:
         enabled: false
-        level: DEBUG
+        level: "INFO"
         folder: logs
         maxsize: 10
         maxage: 7
@@ -37,7 +37,7 @@ rollup:
   genlayerchainrpcurl: {{ vault.testnet.zksync.rpc_url }}
   genlayerchainwebsocketurl: {{ vault.testnet.zksync.ws_url }}
 consensus:
-  consensusaddress: {{ genlayer.consensus_address }}
+  consensusaddress: {{ genlayer.consensus_contract_address }}
   genesis: {{ genlayer.genesis }}
 merkleforest:
     maxdepth: 16
