@@ -37,7 +37,7 @@ rollup:
   genlayerchainrpcurl: {{ vault.testnet.zksync.rpc_url }}
   genlayerchainwebsocketurl: {{ vault.testnet.zksync.ws_url }}
 consensus:
-  consensusaddress: {{ genlayer.consensus_address }}
+  consensusaddress: {{ genlayer.consensus_contract_address }}
   genesis: {{ genlayer.genesis }}
 merkleforest:
     maxdepth: 16
