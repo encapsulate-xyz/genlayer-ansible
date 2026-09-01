@@ -20,7 +20,7 @@
     dest: "{{ alloy_config_file_path }}"
     owner: "{{ service_identifier }}"
     group: "{{ project }}"
-    mode: "0600"
+    mode: "0660"
   notify:
     - Restart service
 

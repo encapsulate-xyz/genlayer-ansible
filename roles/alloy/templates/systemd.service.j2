@@ -4,7 +4,7 @@ After=network.target
 
 [Service]
 Type=simple
-User={{ service_identifier }}
+User={{ alloy_service_user }}
 Group={{ project }}
 WorkingDirectory={{ alloy_home_dir }}
 ExecStart={{ alloy_bin_dir }}/{{ service_identifier }} run \
