@@ -16,6 +16,7 @@
     - name: Set service_identifier
       ansible.builtin.set_fact:
         service_identifier: "{{ project }}-{{ alloy.service_identifier_suffix }}-{{ env }}"
+        alloy_service_user: "{{ project }}-{{ env }}"
 
     - name: Include common handlers
       ansible.builtin.include_role:

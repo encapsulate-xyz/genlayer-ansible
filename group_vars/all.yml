@@ -46,7 +46,6 @@ genlayer:
       listen_port: 3999
 
 alloy:
-  service_identifier_suffix: alloy
   source_url: https://github.com/grafana/alloy/releases/download
   file_extension: zip
   ports:
