@@ -14,6 +14,17 @@
     binary_dest_path: "{{ alloy_bin_dir }}/{{ service_identifier }}"
     extracted_binary_path: "{{ alloy_default_binary_name }}"
 
+- name: Set permissions for alloy data and log directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ service_identifier }}"
+    group: "{{ project }}"
+    mode: "0660"
+  loop:
+    - "{{ alloy_data_dir }}"
+    - "{{ alloy_log_dir }}"
+
 - name: Copy alloy config
   ansible.builtin.template:
     src: "{{ env }}/config.alloy.j2"
