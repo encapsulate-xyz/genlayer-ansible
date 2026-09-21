@@ -25,3 +25,5 @@
     - musl
     - moreutils
     - libnss3
+    - fonts-liberation
+    - fontconfig
