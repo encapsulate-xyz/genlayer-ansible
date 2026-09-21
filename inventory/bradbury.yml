@@ -11,3 +11,8 @@ all:
         webdriver_host:
           ansible_host: ts.validator.genlayer.bradbury.encapsulate.xyz
           type: webdriver
+        100.93.178.12:
+          type: validator
+        tmp_webdriver_host:
+          ansible_host: 100.93.178.12
+          type: webdriver
