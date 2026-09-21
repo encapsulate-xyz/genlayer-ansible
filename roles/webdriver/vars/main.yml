@@ -26,6 +26,10 @@ webdriver_missing_libraries:
   - libnss3.so
   - libnssutil3.so
   - libsmime3.so
+  - libsoftokn3.so
+  - libfreebl3.so
+  - libfreeblpriv3.so
+  - libnssckbi.so
   - libatk-1.0.so.0
   - libatk-bridge-2.0.so.0
   - libcups.so.2
