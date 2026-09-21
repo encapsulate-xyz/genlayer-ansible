@@ -65,3 +65,10 @@
   register: genvm_setup_result
   changed_when: genvm_setup_result.rc == 0
   when: setup_genvm | default(false) | bool
+
+- name: Set ownership for third_party directory
+  ansible.builtin.file:
+    path: "{{ node_home_dir }}/third_party"
+    owner: "{{ service_identifier }}"
+    group: "{{ project }}"
+    recurse: true
