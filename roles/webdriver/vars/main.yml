@@ -60,3 +60,33 @@ webdriver_missing_libraries:
   - libgraphite2.so.3
   - libdatrie.so.1
   - libxshmfence.so.1
+  # required since webdriver 0.0.12 on ubuntu 24.04
+  - libX11.so.6
+  - libXNVCtrl.so.0
+  - libXext.so.6
+  - libXau.so.6
+  - libXdmcp.so.6
+  - libxcb.so.1
+  - libxkbcommon.so.0
+  - libdbus-1.so.3
+  - libdrm.so.2
+  - libfribidi.so.0
+  - libglib-2.0.so.0
+  - libgio-2.0.so.0
+  - libgobject-2.0.so.0
+  - libgmodule-2.0.so.0
+  - libgssapi_krb5.so.2
+  - libkrb5.so.3
+  - libkrb5support.so.0
+  - libk5crypto.so.3
+  - libkeyutils.so.1
+  - libbsd.so.0
+  # additionally required on ubuntu 26.04
+  # - libffi.so.8
+  # - libgnutls.so.30
+  # - libhogweed.so.6
+  # - libnettle.so.8
+  # - libidn2.so.0
+  # - libp11-kit.so.0
+  # - libtasn1.so.6
+  # - libunistring.so.2
