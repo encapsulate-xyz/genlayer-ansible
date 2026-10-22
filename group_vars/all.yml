@@ -33,6 +33,7 @@ genlayer:
       metrics_port: 9153
   webdriver:
     source_url: yeagerai/genlayer-genvm-webdriver
+    healthcheck_target_url: https://test-server.genlayer.com/static/genvm/hello.html
     ports:
       listen_port: 4444
   llm:

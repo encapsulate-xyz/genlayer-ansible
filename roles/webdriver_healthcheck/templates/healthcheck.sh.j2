@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# restarts {{ webdriver_service_identifier }} when the process is up but can no longer render a page,
+# a hang that systemd's Restart=always does not catch
+set -euo pipefail
+
+service="{{ webdriver_service_identifier }}"
+state_file="{{ webdriver_healthcheck_state_file_path }}"
+max_failures={{ webdriver_healthcheck_max_failures }}
+grace_seconds={{ webdriver_healthcheck_grace_seconds }}
+auto_restart={{ webdriver_healthcheck_auto_restart | bool | lower }}
+
+# stdout is appended to the log file by the systemd unit, every line goes through here for a timestamp
+log() {
+  printf '[%s] %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"
+}
+
+# a stopped or crashing service is systemd's job, not ours
+if ! systemctl is-active --quiet "$service"; then
+  log "$service is not active, skipping healthcheck"
+  rm -f "$state_file"
+  exit 0
+fi
+
+# the invocation id changes on every (re)start, so failures from a previous run are never counted
+invocation=$(systemctl show -p InvocationID --value "$service")
+
+if curl_error=$(curl -fsS --max-time {{ webdriver_healthcheck_timeout_seconds }} -o /dev/null -G \
+  --data "mode=text" \
+  --data-urlencode "url={{ genlayer.webdriver.healthcheck_target_url }}" \
+  "http://127.0.0.1:{{ genlayer.webdriver.ports.listen_port }}/healthcheck" 2>&1); then
+  echo "$invocation 0" > "$state_file"
+  log "healthcheck ok"
+  exit 0
+fi
+log "$curl_error"
+
+active_since=$(date -d "$(systemctl show -p ActiveEnterTimestamp --value "$service")" +%s)
+if (( $(date +%s) - active_since < grace_seconds )); then
+  log "healthcheck failed within ${grace_seconds}s of startup, not counted"
+  exit 1
+fi
+
+previous=""
+failures=0
+if [[ -r $state_file ]]; then
+  read -r previous failures < "$state_file" || true
+fi
+[[ $previous == "$invocation" ]] || failures=0
+failures=$((failures + 1))
+echo "$invocation $failures" > "$state_file"
+log "healthcheck failed (${failures}/${max_failures})"
+
+if (( failures >= max_failures )) && [[ $auto_restart == true ]]; then
+  log "$service found to be unhealthy - restarting service now"
+  rm -f "$state_file"
+  if ! restart_error=$(systemctl restart "$service" 2>&1); then
+    log "restart failed: $restart_error"
+  fi
+fi
+
+exit 1
