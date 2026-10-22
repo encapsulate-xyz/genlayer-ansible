@@ -1,6 +1,6 @@
 ---
 alloy:
-  version: v1.13.2
+  version: v1.20.1
 
 nvm:
   version: 0.40.1

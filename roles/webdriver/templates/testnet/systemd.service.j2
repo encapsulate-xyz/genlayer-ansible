@@ -7,7 +7,7 @@ Group={{ project }}
 WorkingDirectory={{ webdriver_home_dir }}
 EnvironmentFile={{ webdriver_environment_general_file_path }}
 ExecStart=/bin/bash -c 'exec node {{ webdriver_bin_dir }}/dist/index.js \
---port {{ genlayer.webdriver.ports.listen_port }} \
+--port {{ genlayer.webdriver.ports.listen_port }} 2>&1 \
 | /usr/bin/ts "[%%Y-%%m-%%d %%H:%%M:%%S]"'
 Restart=always
 RestartSec=4

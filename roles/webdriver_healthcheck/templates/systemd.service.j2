@@ -1,0 +1,15 @@
+[Unit]
+Description={{ service_identifier }}
+After={{ webdriver_service_identifier }}.service
+
+[Service]
+Type=oneshot
+ExecStart={{ webdriver_healthcheck_bin_dir }}/{{ service_identifier }}
+TimeoutStartSec=120
+LimitNOFILE=65536
+MemoryMax=64G
+StandardOutput=append:{{ webdriver_healthcheck_log_file_path }}
+StandardError=inherit
+
+[Install]
+WantedBy=multi-user.target

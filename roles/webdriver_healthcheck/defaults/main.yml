@@ -1,0 +1,17 @@
+---
+# maintains directories and paths
+webdriver_healthcheck_home_dir: /opt/{{ service_identifier }}
+
+webdriver_healthcheck_bin_dir: "{{ webdriver_healthcheck_home_dir }}/bin"
+webdriver_healthcheck_data_dir: "{{ webdriver_healthcheck_home_dir }}/data"
+webdriver_healthcheck_log_dir: "{{ webdriver_healthcheck_home_dir }}/log"
+
+webdriver_healthcheck_directories:
+  - "{{ webdriver_healthcheck_home_dir }}"
+  - "{{ webdriver_healthcheck_bin_dir }}"
+  - "{{ webdriver_healthcheck_data_dir }}"
+  - "{{ webdriver_healthcheck_log_dir }}"
+
+webdriver_healthcheck_log_file_path: "{{ webdriver_healthcheck_log_dir }}/{{ service_identifier }}.log"
+
+webdriver_healthcheck_state_file_path: "{{ webdriver_healthcheck_data_dir }}/{{ webdriver_healthcheck_state_file_name }}"

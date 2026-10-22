@@ -7,7 +7,7 @@
 
 local.file_match "genlayer_logs" {
   path_targets = [{
-    __path__ = "/opt/genlayer-asimov/data/logs/node.log",
+    __path__ = "/opt/{{ alloy_service_user }}/data/logs/node.log",
   }]
 }
 
@@ -55,7 +55,7 @@ loki.write "central" {
     // HTTP Basic Authentication
     basic_auth {
       username = "1423311"
-      password = "{{ vault.external.asimov.telemetry_password }}"
+      password = "{{ vault.external.testnet.telemetry_password }}"
     }
 
     // Configurable batch settings for efficient log sending
@@ -101,7 +101,7 @@ prometheus.remote_write "central" {
     // HTTP Basic Authentication
     basic_auth {
       username = "2855269"
-      password = "{{ vault.external.asimov.telemetry_password }}"
+      password = "{{ vault.external.testnet.telemetry_password }}"
     }
 
     // Queue configuration for reliability

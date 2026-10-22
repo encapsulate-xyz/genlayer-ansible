@@ -1,0 +1,10 @@
+[Unit]
+Description=Run {{ service_identifier }} every {{ webdriver_healthcheck_interval_seconds }}s
+
+[Timer]
+OnBootSec={{ webdriver_healthcheck_interval_seconds }}
+OnUnitActiveSec={{ webdriver_healthcheck_interval_seconds }}
+AccuracySec=1s
+
+[Install]
+WantedBy=timers.target

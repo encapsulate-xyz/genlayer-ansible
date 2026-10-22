@@ -1,11 +1,12 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/yeagerai/genvm/v0.2.7/doc/schemas/default-config.json#llm
+# yaml-language-server: $schema=https://raw.githubusercontent.com/yeagerai/genvm/refs/heads/v0.3.x/doc/schemas/default-config.json#/llm
 
 bind_address: 127.0.0.1:{{ genlayer.llm.ports.listen_port }}
 
-lua_script_path: {{ node_home_dir }}/third_party/genvm/config/genvm-llm-greybox.lua
+lua_script_path: {{ node_genvm_dir }}/config/genvm-llm-default.lua
 vm_count: 6
-lua_path: {{ node_home_dir }}/third_party/genvm/lib/genvm-lua/?.lua
-signer_url: "http://localhost:{{ genlayer.validator.ports.admin_port }}/genvm/sign"
+data_dir: {{ node_genvm_dir }}/data
+lua_path: {{ node_genvm_dir }}/lib/genvm-lua/?.lua
+signer_url: "http://localhost:{{ genlayer.validator.ports.admin_port }}/admin/genvm/sign"
 signer_headers:
   x-admin-auth: "#{admin_token}"
 
@@ -13,6 +14,33 @@ threads: 4
 blocking_threads: 16
 log_disable: tracing*,polling*,tungstenite*,tokio_tungstenite*
 
+# ---------------------------------------------------------------------------
+# Greybox chains — worked example
+#
+# `meta.greybox` below is the chain definition read by genvm-llm-greybox.lua.
+# It only takes effect when `lua_script_path` above points at that script;
+# genvm-llm-default.lua ignores it and orders by provider `meta.priority`
+# instead (note the two run in OPPOSITE directions).
+#
+#   * It goes on a MODEL, under a backend's `models:` — not on the backend.
+#   * The value is a table keyed by chain, never a bare number: a scalar makes
+#     the Lua raise at module load.
+#   * `text` and `image` are independent chains. Lower number = tried first;
+#     the next entry is the fallback.
+#   * A model with no `meta.greybox` is simply left out of the chains. If NO
+#     model anywhere declares one, the Lua errors and the node fails to start.
+#
+#   models:
+#     deepseek/deepseek-v3.2:
+#       meta:
+#         greybox: { text: 1 }        # primary of the text chain
+#     anthropic/claude-haiku-4.5:
+#       meta:
+#         greybox: { text: 3, image: 3 }   # participates in both chains
+#
+# Chain changes are applied by restarting the LLM module; there is no runtime
+# override file. Full runbook: greybox-setup-guide.md (packaged alongside).
+# ---------------------------------------------------------------------------
 backends:
   openrouter:
     enabled: false
@@ -84,75 +112,17 @@ backends:
     provider: openai-compatible
     key: ${ENV[IOINTELLIGENCEKEY]}
     models:
-      meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8:
+      # io.net retired the older models, these come from its "Available models" list (Oct 2026)
+      deepseek-ai/DeepSeek-V4.1-Flash:
         supports_json: true
         supports_image: false
-      deepseek-ai/DeepSeek-R1-0528:
+      zai-org/GLM-5.3:
         supports_json: true
         supports_image: false
-      Qwen/Qwen3-235B-A22B-FP8:
+      zai-org/GLM-5.3-Flash:
         supports_json: true
         supports_image: false
-      meta-llama/Llama-3.3-70B-Instruct:
-        supports_json: true
-        supports_image: false
-        meta:
-          greybox: { text: 7 }
-      google/gemma-3-27b-it:
-        supports_json: true
-        supports_image: false
-      mistralai/Magistral-Small-2506:
-        supports_json: true
-        supports_image: false
-      mistralai/Devstral-Small-2505:
-        supports_json: true
-        supports_image: false
-      deepseek-ai/DeepSeek-R1-Distill-Llama-70B:
-        supports_json: true
-        supports_image: false
-      deepseek-ai/DeepSeek-R1:
-        supports_json: true
-        supports_image: false
-      deepseek-ai/DeepSeek-R1-Distill-Qwen-32B:
-        supports_json: true
-        supports_image: false
-      microsoft/phi-4:
-        supports_json: true
-        supports_image: false
-      nvidia/AceMath-7B-Instruct:
-        supports_json: true
-        supports_image: false
-      mistralai/Mistral-Large-Instruct-2411:
-        supports_json: true
-        supports_image: false
-      bespokelabs/Bespoke-Stratos-32B:
-        supports_json: true
-        supports_image: false
-      netease-youdao/Confucius-o1-14B:
-        supports_json: true
-        supports_image: false
-      CohereForAI/aya-expanse-32b:
-        supports_json: true
-        supports_image: false
-      THUDM/glm-4-9b-chat:
-        supports_json: true
-        supports_image: false
-      mistralai/Ministral-8B-Instruct-2410:
-        supports_json: true
-        supports_image: false
-      openbmb/MiniCPM3-4B:
-        supports_json: true
-        supports_image: false
-      ibm-granite/granite-3.1-8b-instruct:
-        supports_json: true
-        supports_image: false
-      Qwen/Qwen2.5-VL-32B-Instruct:
-        supports_json: true
-        supports_image: true
-      meta-llama/Llama-3.2-90B-Vision-Instruct:
-        supports_json: true
-        supports_image: true
-      BAAI/bge-multilingual-gemma2:
+      XiaomiMiMo/MiMo-V2.6-Flash:
         supports_json: true
         supports_image: false
 

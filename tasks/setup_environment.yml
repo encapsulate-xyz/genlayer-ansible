@@ -2,7 +2,7 @@
 - name: Set project and service identifier in facts
   ansible.builtin.set_fact:
     project: "{{ group_names[0] }}"
-    service_identifier: "{{ group_names[0] }}{{ '' if type in default_node_types else '-' + type }}-{{ env }}"
+    service_identifier: "{{ group_names[0] }}{{ '' if type in default_node_types else '-' + type }}"
 
 - name: Set architecture variable based on system architecture
   ansible.builtin.set_fact:

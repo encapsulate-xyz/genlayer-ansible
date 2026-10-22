@@ -5,10 +5,10 @@ node_home_dir: /opt/{{ service_identifier }}
 node_bin_dir: "{{ node_home_dir }}/bin"
 node_config_dir: "{{ node_home_dir }}/config"
 node_data_dir: "{{ node_home_dir }}/data"
-node_key_dir: "{{ node_home_dir }}/key"
 node_log_dir: "{{ node_home_dir }}/log"
 node_env_dir: "{{ node_home_dir }}/environment"
 
+node_keystore_dir: "{{ node_data_dir }}/keystore"
 node_merkle_dir: "{{ node_data_dir }}/merkle"
 node_merkle_forest_dir: "{{ node_merkle_dir }}/forest"
 node_merkle_tree_dir: "{{ node_merkle_dir }}/tree"
@@ -18,7 +18,6 @@ node_directories:
   - "{{ node_bin_dir }}"
   - "{{ node_config_dir }}"
   - "{{ node_data_dir }}"
-  - "{{ node_key_dir }}"
   - "{{ node_env_dir }}"
   - "{{ node_log_dir }}"
   - "{{ node_merkle_dir }}"
@@ -30,6 +29,11 @@ node_config_file_path: "{{ node_config_dir }}/{{ node_config_file_name }}"
 node_log_file_path: "{{ node_log_dir }}/{{ service_identifier }}.log"
 
 node_environment_secret_file_path: "{{ node_env_dir }}/{{ node_environment_secret_file_name }}"
-node_operator_key_file_path: "{{ node_key_dir }}/{{ node_operator_key_file_name }}"
 
-node_llm_config_file_path: "{{ node_home_dir }}/third_party/genvm/config/{{ node_llm_config_file_name }}"
+node_operator_key_file_path: "{{ node_keystore_dir }}/{{ node_operator_key_file_name }}"
+
+node_protocol_manifest_file_path: "{{ node_config_dir }}/{{ node_protocol_manifest_file_name }}"
+
+# release tarball ships genvm under opt/genvm/<version> with a `current` symlink
+node_genvm_dir: "{{ node_home_dir }}/genvm/current"
+node_llm_config_file_path: "{{ node_genvm_dir }}/config/{{ node_llm_config_file_name }}"

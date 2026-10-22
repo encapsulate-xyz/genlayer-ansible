@@ -20,4 +20,5 @@
     direction: "{{ item.direction | default('in') }}"
     from: "{{ from_server_ip.msg | default(item.from) }}"
     to: "{{ item.to | default('any') }}"
+    delete: "{{ item.delete | default(false) }}"
     comment: "{{ item.rule }} {{ env }} {{ project }} {{ type }} {{ item.comment }} from {{ item.from }} ip on {{ item.proto }} protocol"

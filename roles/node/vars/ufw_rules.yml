@@ -5,6 +5,7 @@ node_ufw_rules:
     rule: allow
     from: any
     comment: admin_port
+    delete: true
 
   - port: "{{ genlayer.validator.ports.metrics_port }}"
     proto: tcp

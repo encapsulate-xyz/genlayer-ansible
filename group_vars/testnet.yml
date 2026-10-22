@@ -1,0 +1,15 @@
+---
+# maintains versions and can overwrite all.yml
+genlayer:
+  snapshot_url: https://genlayer-node-snapshots.fra1.cdn.digitaloceanspaces.com/bradbury/2026-09-20/bradbury-2026-09-20.tar.zst
+  consensus_contract_address: "0x3F71AE080BD6270A91dBcc7960d88797828538E0"
+  genesis: 47930
+  chain_id: 4221
+  rollup_provider: conduit
+  protocol_manifest_url: https://docs.genlayer.com/validators/bradbury.protocol-manifest.json
+  validator_address: "0xf9e630b65b2cbCD9e84Af177245EBa4763B5e8D2"
+  operator_address: "0xb2137ad9d12151749e5e9384adb17d82ac29e51a"
+  validator:
+    version: v0.6.0-rc.2
+  webdriver:
+    version: 0.0.12

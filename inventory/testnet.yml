@@ -1,0 +1,13 @@
+---
+# maintains testnet inventory grouped by project names
+all:
+  vars:
+    env: testnet
+  children:
+    genlayer:
+      hosts:
+        ts.validator.genlayer.testnet.encapsulate.xyz:
+          type: validator
+        webdriver_host:
+          ansible_host: ts.validator.genlayer.testnet.encapsulate.xyz
+          type: webdriver

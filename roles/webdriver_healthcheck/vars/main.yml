@@ -1,0 +1,9 @@
+---
+# mirrors the upstream docker compose healthcheck: restart after 4 consecutive failures, 30s apart
+webdriver_healthcheck_interval_seconds: 30
+webdriver_healthcheck_timeout_seconds: 10
+webdriver_healthcheck_grace_seconds: 10
+webdriver_healthcheck_max_failures: 4
+webdriver_healthcheck_auto_restart: true
+
+webdriver_healthcheck_state_file_name: "{{ service_identifier }}.state"

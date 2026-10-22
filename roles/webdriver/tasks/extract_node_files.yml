@@ -98,15 +98,6 @@
         name: "{{ container_name }}"
         state: absent
 
-- name: Update Chromium path in files
-  ansible.builtin.replace:
-    path: "{{ item }}"
-    regexp: '/usr/bin/chromium'
-    replace: '{{ webdriver_bin_dir }}/chromium'
-  loop: 
-    - "{{ webdriver_bin_dir }}/src/browser.ts"    
-    - "{{ webdriver_bin_dir }}/dist/browser.js"
-
 - name: Update Chromium libs path in files
   ansible.builtin.replace:
     path: "{{ item }}"
