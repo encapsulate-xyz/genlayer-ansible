@@ -36,7 +36,7 @@
   vars:
     binary_subpath: "genlayer-node-linux-amd64"
   ansible.builtin.copy:
-    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/third_party"
+    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/opt/genvm"
     dest: "{{ node_home_dir }}"
     remote_src: true
     owner: "{{ service_identifier }}"
@@ -56,19 +56,21 @@
     state: present
     update_cache: true
   loop:
+    - python3-pip
     - python3-venv
 
 - name: Run GenVM setup script to patch runners
-  ansible.builtin.command: python3 ./third_party/genvm/bin/setup.py
+  ansible.builtin.command: python3 {{ node_genvm_dir }}/bin/setup.py
   args:
     chdir: "{{ node_home_dir }}"
   register: genvm_setup_result
   changed_when: genvm_setup_result.rc == 0
   when: setup_genvm | default(false) | bool
 
-- name: Set ownership for third_party directory
+- name: Set ownership for genvm directory
   ansible.builtin.file:
-    path: "{{ node_home_dir }}/third_party"
+    path: "{{ node_genvm_dir | dirname }}"
+    state: directory
     owner: "{{ service_identifier }}"
     group: "{{ project }}"
     recurse: true

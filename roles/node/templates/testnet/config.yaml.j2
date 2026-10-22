@@ -1,0 +1,77 @@
+rollup:
+  genlayerchainrpcurl: "{{ vault.testnet.zksync.rpc_url }}"
+  genlayerchainwebsocketurl: "{{ vault.testnet.zksync.ws_url }}"
+  provider: "{{ genlayer.rollup_provider }}"
+consensus:
+  consensusaddress: "{{ genlayer.consensus_contract_address }}"
+  manifestpath: "{{ node_protocol_manifest_file_path }}"
+  chainid: "{{ genlayer.chain_id }}"
+  genesis: {{ genlayer.genesis }}
+datadir: "{{ node_data_dir }}"
+logging:
+  level: "INFO"
+  json: false
+  file:
+    enabled: true
+    level: "DEBUG"
+    folder: logs
+    maxsize: 10
+    maxage: 7
+    maxbackups: 100
+    localtime: false
+    compress: true
+node:
+  mode: "validator"
+  validatorWalletAddress: "{{ genlayer.validator_address }}"
+  operatorAddress: "{{ genlayer.operator_address }}"
+  admin:
+    port: {{ genlayer.validator.ports.admin_port }}
+  rpc:
+    host: 127.0.0.1
+    port: {{ genlayer.validator.ports.rpc_port }}
+    endpoints:
+      genlayer:
+        enabled: true
+      genlayer_debug:
+        enabled: false
+      ethereum:
+        enabled: true
+      zksync:
+        enabled: false
+  ops:
+    port: {{ genlayer.validator.ports.metrics_port }}
+    endpoints:
+      metrics: true
+      health: true
+genvm:
+  root_dir: "{{ node_genvm_dir }}"
+  start_manager: true
+  manager_url: http://127.0.0.1:{{ genlayer.manager.ports.listen_port }}
+  # permits: 32
+  # sync_permits: 256
+  # sync_wait_timeout: "20s"
+  # sync_wait_poll_interval: "100ms"
+  replay:
+    parallel_enabled: false
+    workers: 4
+    consensus_reserve_permits: 2
+    replay_floor_permits: 1
+    max_journal_bytes: 268435456
+    reorg_history_blocks: 4096
+    max_reorg_journal_bytes: 268435456
+merkleforest:
+  maxdepth: 16
+  dbpath: "{{ node_merkle_forest_dir }}/data.db"
+  indexdbpath: "{{ node_merkle_dir }}/index.db"
+merkletree:
+  maxdepth: 16
+  dbpath: "{{ node_merkle_tree_dir }}"
+metrics:
+  interval: "15s"
+  collectors:
+    node:
+      enabled: true
+    genvm:
+      enabled: true
+    webdriver:
+      enabled: true

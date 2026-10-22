@@ -27,6 +27,17 @@
   notify:
     - Restart service
 
+- name: Download protocol manifest
+  ansible.builtin.get_url:
+    url: "{{ genlayer.protocol_manifest_url }}"
+    dest: "{{ node_protocol_manifest_file_path }}"
+    owner: "{{ service_identifier }}"
+    group: "{{ project }}"
+    mode: "0644"
+    force: true
+  notify:
+    - Restart service
+
 - name: Copy llm configuration file
   ansible.builtin.template:
     src: "{{ env }}/genvm-module-llm.yaml.j2"
@@ -47,33 +58,20 @@
         secret_destination_path: "{{ node_environment_secret_file_path }}"
         secret_type: environment
 
-    - name: Fetch operator key file
+    - name: Create keystore directory
+      ansible.builtin.file:
+        path: "{{ node_keystore_dir }}"
+        state: directory
+        owner: "{{ service_identifier }}"
+        group: "{{ project }}"
+        mode: "0700"
+
+    - name: Install operator keystore
       ansible.builtin.include_tasks: tasks/get_and_save_vault_secret.yml
       vars:
         vault_secret_source_path: "{{ project }}/{{ env }}/{{ type }}/{{ node_operator_key_file_name }}"
         secret_destination_path: "{{ node_operator_key_file_path }}"
         secret_type: json
-
-    - name: Import GenLayer operator account keystore
-      ansible.builtin.command:
-        cmd: >
-          {{ node_bin_dir }}/{{ service_identifier }} account import 
-          --password "{{ lookup('env', 'OPERATOR_ACCOUNT_PASSWORD') }}" 
-          --passphrase "{{ lookup('env', 'OPERATOR_ACCOUNT_PASSWORD') }}" 
-          --path "{{ node_operator_key_file_path }}" 
-          -c "{{ node_config_file_path }}" 
-          --setup
-        chdir: "{{ node_home_dir }}"
-      no_log: true
-      notify:
-        - Restart service
-
-    - name: Set ownership for data directory
-      ansible.builtin.file:
-        path: "{{ node_data_dir }}"
-        owner: "{{ service_identifier }}"
-        group: "{{ project }}"
-        recurse: true
 
 - name: Copy systemd service file
   ansible.builtin.template:
