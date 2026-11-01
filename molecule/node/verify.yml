@@ -5,7 +5,7 @@
   vars_files:
     - ../../group_vars/all.yml
     - ../../group_vars/{{ env }}.yml
-    - ../shared/fake_secrets.yml
+    - ../shared/vars/fake_secrets.yml
   vars:
     service_name: genlayer
     home_dir: /opt/genlayer

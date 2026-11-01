@@ -175,7 +175,7 @@ molecule/
   shared/
     Dockerfile.j2         Ubuntu 24.04 with systemd and SSH, like our servers
     group_vars/all.yml    fake values for group_vars/vault.yml, and test settings
-    fake_secrets.yml      what the fake HCP Vault serves
+    vars/fake_secrets.yml what the fake HCP Vault serves
     prepare.yml           starts the fake HCP Vault container
     cleanup.yml           removes it
   untested.yml          tasks no scenario runs, each with a reason

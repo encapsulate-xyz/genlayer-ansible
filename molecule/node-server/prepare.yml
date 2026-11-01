@@ -3,7 +3,7 @@
   hosts: all
   gather_facts: false
   vars_files:
-    - ../shared/fake_secrets.yml
+    - ../shared/vars/fake_secrets.yml
   vars:
     vault_dir: /tmp/molecule-vault
     vault_exec_env:

@@ -5,18 +5,21 @@
   vars:
     service_name: genlayer
   tasks:
-    # rc 1 and 5 mean the unit doesn't exist, as on a fresh server
+    # a fresh server has neither unit, so a missing one is fine
     - name: Stop the node
-      ansible.builtin.command: systemctl disable --now {{ service_name }}
+      ansible.builtin.systemd_service:
+        name: "{{ service_name }}"
+        state: stopped
+        enabled: false
       register: node_stop
-      changed_when: node_stop.rc == 0
-      failed_when: node_stop.rc not in [0, 1]
+      failed_when: (node_stop.failed | default(false)) and node_stop.msg is not search('Could not find the requested service')
 
     - name: Stop the fake Vault
-      ansible.builtin.command: systemctl stop molecule-vault
+      ansible.builtin.systemd_service:
+        name: molecule-vault
+        state: stopped
       register: vault_stop
-      changed_when: vault_stop.rc == 0
-      failed_when: vault_stop.rc not in [0, 5]
+      failed_when: (vault_stop.failed | default(false)) and vault_stop.msg is not search('Could not find the requested service')
 
     - name: Remove node and Vault files
       ansible.builtin.file:

@@ -4,13 +4,15 @@
 # The binary prints its version to stderr.
 - name: Get the installed version
   ansible.builtin.command: "{{ node_bin_dir }}/{{ service_identifier }} version"
-  register: installed_version
+  register: node_installed_version
   changed_when: false
   failed_when: false
   check_mode: false
 
 - name: Install the release
-  when: (installed_version.stdout ~ installed_version.stderr) is not search('^Version:\\s+' ~ genlayer.validator.version | regex_escape ~ '$', multiline=True)
+  when: >-
+    (node_installed_version.stdout ~ node_installed_version.stderr)
+    is not search('^Version:\\s+' ~ genlayer.validator.version | regex_escape ~ '$', multiline=True)
   block:
     - name: Create a temporary directory
       ansible.builtin.file:

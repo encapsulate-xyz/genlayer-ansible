@@ -5,7 +5,7 @@
   gather_facts: false
   vars_files:
     - group_vars/all.yml
-    - fake_secrets.yml
+    - vars/fake_secrets.yml
   vars:
     vault_exec_env:
       VAULT_ADDR: http://127.0.0.1:8200
