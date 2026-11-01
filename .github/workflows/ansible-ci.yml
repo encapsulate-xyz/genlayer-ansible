@@ -7,4 +7,4 @@ on:
 
 jobs:
   ansible:
-    uses: encapsulate-xyz/.github/.github/workflows/ansible-ci.yml@feat/ansible-ci
+    uses: encapsulate-xyz/.github/.github/workflows/ansible-ci.yml@main
