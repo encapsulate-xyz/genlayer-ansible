@@ -1,0 +1,4 @@
+---
+# same as the validator host in inventory/testnet.yml
+env: testnet
+type: validator

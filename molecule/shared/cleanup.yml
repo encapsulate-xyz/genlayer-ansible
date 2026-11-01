@@ -1,0 +1,12 @@
+---
+- name: Remove the fake HCP Vault
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - group_vars/all.yml
+  tasks:
+    - name: Remove the Vault container
+      community.docker.docker_container:
+        name: "{{ fake_vault.container }}"
+        state: absent

@@ -1,0 +1,49 @@
+---
+- name: Start a fake HCP Vault
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  vars_files:
+    - group_vars/all.yml
+    - fake_secrets.yml
+  vars:
+    vault_exec_env:
+      VAULT_ADDR: http://127.0.0.1:8200
+      VAULT_TOKEN: "{{ lookup('env', 'VAULT_TOKEN') }}"
+  tasks:
+    - name: Start Vault in dev mode
+      community.docker.docker_container:
+        name: "{{ fake_vault.container }}"
+        image: "{{ fake_vault.image }}"
+        env:
+          VAULT_DEV_ROOT_TOKEN_ID: "{{ lookup('env', 'VAULT_TOKEN') }}"
+        networks:
+          - name: "{{ fake_vault.network }}"
+        state: started
+
+    - name: Wait for Vault
+      community.docker.docker_container_exec:
+        container: "{{ fake_vault.container }}"
+        argv: [vault, status]
+        env: "{{ vault_exec_env }}"
+      register: vault_status
+      until: vault_status.rc == 0
+      retries: 10
+      delay: 2
+      changed_when: false
+
+    - name: Enable the KV engine
+      community.docker.docker_container_exec:
+        container: "{{ fake_vault.container }}"
+        argv: [vault, secrets, enable, "-path={{ fake_vault_mount }}", kv-v2]
+        env: "{{ vault_exec_env }}"
+
+    - name: Write the fake secrets
+      community.docker.docker_container_exec:
+        container: "{{ fake_vault.container }}"
+        argv: [vault, kv, put, "{{ fake_vault_mount }}/{{ item.path }}", "-"]
+        stdin: "{{ item.data | to_json }}"
+        env: "{{ vault_exec_env }}"
+      loop: "{{ fake_vault_secrets }}"
+      loop_control:
+        label: "{{ item.path }}"

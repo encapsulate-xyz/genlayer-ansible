@@ -1,0 +1,43 @@
+---
+# Tasks that no Molecule scenario runs, each with the reason. CI fails if a task neither runs in a
+# scenario nor is listed here, and if a listed task starts running, so keep this list current.
+
+# setup_node.yml tasks a scenario can't reach
+- file: tasks/verify_service.yml
+  reason: needs a node that reaches the real chain to pass /health; it runs after every real deploy
+- file: tasks/get_and_save_vault_secret.yml
+  task: Save the fetched key secret to the file
+  reason: genlayer has no key-type secret
+- file: tasks/get_and_save_vault_secret.yml
+  task: Save the fetched Base64-encoded secret to the file
+  reason: genlayer has no base64 secret
+- file: roles/node/tasks/extract_binaries.yml
+  task: Run GenVM setup script to patch runners
+  reason: off by default (setup_genvm), and it downloads the GenVM runners from upstream
+
+# playbooks with no scenario yet
+- file: setup_alloy.yml
+  reason: no scenario for the Alloy playbook yet
+- file: roles/alloy/tasks/main.yml
+  reason: no scenario for the Alloy playbook yet
+- file: tasks/extract_binary.yml
+  reason: only the Alloy role uses it
+- file: setup_webdriver.yml
+  reason: no scenario for the webdriver playbook yet; it needs Docker on the host
+- file: roles/webdriver/tasks/main.yml
+  reason: no scenario for the webdriver playbook yet
+- file: roles/webdriver/tasks/install_dependencies.yml
+  reason: no scenario for the webdriver playbook yet
+- file: roles/webdriver/tasks/extract_node_files.yml
+  reason: no scenario for the webdriver playbook yet
+- file: setup_webdriver_healthcheck.yml
+  reason: no scenario for the webdriver healthcheck playbook yet
+- file: roles/webdriver_healthcheck/tasks/main.yml
+  reason: no scenario for the webdriver healthcheck playbook yet
+- file: roles/common/handlers/main.yml
+  task: Restart timer
+  reason: only the webdriver healthcheck role notifies it
+- file: sync_node.yml
+  reason: no scenario; it replaces the chain data with a full snapshot
+- file: roles/sync_node/tasks/main.yml
+  reason: no scenario; it replaces the chain data with a full snapshot
