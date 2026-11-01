@@ -3,7 +3,7 @@ name: Ansible CI
 on:
   pull_request:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   ansible:
