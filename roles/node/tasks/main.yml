@@ -83,12 +83,3 @@
   notify:
     - Reload service
     - Restart service
-
-- name: Trigger handlers
-  ansible.builtin.meta: flush_handlers
-
-- name: Include verify service task
-  ansible.builtin.include_tasks: tasks/verify_service.yml
-  vars:
-    log_file_path: "{{ node_log_file_path }}"
-    health_url: "http://localhost:{{ genlayer.validator.ports.metrics_port }}/health"
