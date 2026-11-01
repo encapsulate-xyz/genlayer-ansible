@@ -1,0 +1,88 @@
+---
+# Checks that a service came back after a deploy, so a node that crashes on start fails the run
+# instead of passing it. Include it from post_tasks: by then the play's handlers, the restart
+# included, have already run.
+#
+# Optional vars:
+#   verify_service: false            skip the checks (for runs that stop the service on purpose)
+#   verify_unit                      systemd unit to check (default: service_identifier)
+#   verify_version_command           command that prints the installed version
+#   verify_version_expected          text that output must contain, e.g. the pinned version
+#   verify_health_url                URL that must answer with verify_health_status (default 200)
+#   verify_log_path                  log to print when a check fails
+- name: Check the service after the deploy
+  when:
+    - verify_service | default(true) | bool
+    - not ansible_check_mode
+  vars:
+    verify_unit_name: "{{ verify_unit | default(service_identifier) }}"
+  block:
+    - name: Let the service settle
+      ansible.builtin.wait_for:
+        timeout: "{{ verify_settle_seconds | default(30) }}"
+
+    - name: Read the service state
+      ansible.builtin.systemd_service:
+        name: "{{ verify_unit_name }}"
+      register: verify_state_first
+
+    # systemd counts only its own restarts in NRestarts and resets it when Ansible restarts the
+    # unit, so a count that grows while we watch means the service is crash-looping
+    - name: Watch for restarts
+      ansible.builtin.wait_for:
+        timeout: "{{ verify_window_seconds | default(15) }}"
+
+    - name: Read the service state again
+      ansible.builtin.systemd_service:
+        name: "{{ verify_unit_name }}"
+      register: verify_state_second
+
+    - name: Check the service stayed up
+      ansible.builtin.assert:
+        that:
+          - verify_state_first.status.ActiveState == 'active'
+          - verify_state_second.status.ActiveState == 'active'
+          - verify_state_second.status.SubState == 'running'
+          - verify_state_second.status.NRestarts == verify_state_first.status.NRestarts
+        fail_msg: >-
+          {{ verify_unit_name }} is {{ verify_state_second.status.ActiveState }}/{{ verify_state_second.status.SubState }},
+          restarted by systemd {{ verify_state_first.status.NRestarts }} -> {{ verify_state_second.status.NRestarts }} times
+        quiet: true
+
+    - name: Read the installed version
+      when: verify_version_command is defined
+      ansible.builtin.command: "{{ verify_version_command }}"
+      register: verify_version
+      changed_when: false
+
+    - name: Check the installed version
+      when: verify_version_command is defined
+      ansible.builtin.assert:
+        that: verify_version_expected in (verify_version.stdout ~ verify_version.stderr)
+        fail_msg: "Expected {{ verify_version_expected }}, the binary reports: {{ verify_version.stdout ~ verify_version.stderr }}"
+        quiet: true
+
+    - name: Wait for the health check to pass
+      when: verify_health_url is defined
+      ansible.builtin.uri:
+        url: "{{ verify_health_url }}"
+        status_code: "{{ verify_health_status | default(200) }}"
+      register: verify_health
+      until: verify_health.status == (verify_health_status | default(200)) | int
+      retries: "{{ verify_health_retries | default(12) }}"
+      delay: "{{ verify_health_delay | default(10) }}"
+
+  rescue:
+    - name: Read the end of the service log
+      ansible.builtin.command: tail -n 50 {{ verify_log_path | default('/opt/' ~ verify_unit_name ~ '/log/' ~ verify_unit_name ~ '.log') }}
+      register: verify_log
+      changed_when: false
+      failed_when: false
+
+    - name: Show the end of the service log
+      ansible.builtin.debug:
+        var: verify_log.stdout_lines
+
+    - name: Fail the deploy
+      ansible.builtin.fail:
+        msg: "{{ verify_unit_name }} did not come back after the deploy: {{ ansible_failed_result.msg | default('see the log above') }}"

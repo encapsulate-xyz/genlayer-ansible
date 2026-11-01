@@ -27,3 +27,11 @@
         - name: Include node role
           ansible.builtin.include_role:
             name: node
+
+  post_tasks:
+    - name: Verify the node
+      when: type in allowed_node_types
+      ansible.builtin.include_tasks: tasks/verify_service.yml
+      vars:
+        # 503 only when the node is stuck (sync blocked, banned); a node still syncing returns 200
+        verify_health_url: "http://127.0.0.1:{{ genlayer.validator.ports.metrics_port }}/health"
