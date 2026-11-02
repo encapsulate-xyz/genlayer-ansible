@@ -1,6 +1,6 @@
 # Ubuntu 24.04 with systemd and SSH, like our servers after server-setup-playbook.
-# curl, python3-debian (for apt repositories) and zstd (for sync_node.yml) come with Ubuntu's server image,
-# and unzip (for Alloy) with server-setup-playbook; this image has none of them
+# curl, python3-debian (for apt repositories), wget (for the nvm role) and zstd (for sync_node.yml) come with
+# Ubuntu's server image, and unzip (for Alloy) with server-setup-playbook; this image has none of them
 FROM {{ item.image }}
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -19,6 +19,7 @@ RUN apt-get update \
         systemd \
         systemd-sysv \
         unzip \
+        wget \
         zstd
 
 # the container runs privileged, so its systemd would otherwise reset the host's binfmt handlers
