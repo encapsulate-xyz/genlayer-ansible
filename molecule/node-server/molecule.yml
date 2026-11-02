@@ -1,5 +1,5 @@
 ---
-# runs the node scenario's converge.yml and verify.yml on a real throwaway server instead of a container,
+# runs the node scenario's converge.yml, side_effect.yml and verify.yml on a real throwaway server instead of a container,
 # so the test also covers our server baseline and the real kernel firewall.
 # point it at a server with MOLECULE_SERVER and MOLECULE_SERVER_KEY (see host_vars/server.yml)
 dependency:
@@ -34,6 +34,7 @@ ansible:
   playbooks:
     prepare: prepare.yml
     converge: ../node/converge.yml
+    side_effect: ../node/side_effect.yml
     verify: ../node/verify.yml
     cleanup: cleanup.yml
 
@@ -58,6 +59,7 @@ scenario:
     - prepare
     - converge
     - idempotence
+    - side_effect
     - verify
     - cleanup
     - destroy

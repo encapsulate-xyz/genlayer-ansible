@@ -1,4 +1,6 @@
-# Ubuntu 24.04 with systemd and SSH, like our servers after server-setup-playbook
+# Ubuntu 24.04 with systemd and SSH, like our servers after server-setup-playbook.
+# sync_node.yml needs curl and zstd, which come with Ubuntu's server image, and Alloy needs unzip,
+# which server-setup-playbook installs; this image has none of them
 FROM {{ item.image }}
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -6,6 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
+        curl \
         iproute2 \
         iptables \
         openssh-server \
@@ -13,7 +16,9 @@ RUN apt-get update \
         python3-apt \
         sudo \
         systemd \
-        systemd-sysv
+        systemd-sysv \
+        unzip \
+        zstd
 
 # the container runs privileged, so its systemd would otherwise reset the host's binfmt handlers
 RUN systemctl mask systemd-binfmt.service proc-sys-fs-binfmt_misc.automount proc-sys-fs-binfmt_misc.mount

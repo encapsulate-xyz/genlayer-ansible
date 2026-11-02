@@ -36,6 +36,14 @@
         regexp: '\sh1-finland-hub-monitor\.crane-goldeye\.ts\.net$'
         line: "{{ monitor_server_test_ip }} h1-finland-hub-monitor.crane-goldeye.ts.net"
 
+    # converge.yml checks every host in Alloy's config resolves here before deploying Alloy
+    - name: Point the Grafana Cloud names at the server itself
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '\s{{ item | regex_escape }}$'
+        line: "127.0.0.1 {{ item }}"
+      loop: "{{ grafana_cloud_hosts }}"
+
     - name: Install unzip
       ansible.builtin.apt:
         name: unzip

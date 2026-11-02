@@ -1,6 +1,6 @@
 ---
-# runs setup_node.yml on a fresh Ubuntu 24.04 container, runs it again to check nothing changes,
-# then checks what it left on the host (verify.yml)
+# runs setup_node.yml and setup_alloy.yml on a fresh Ubuntu 24.04 container, runs them again to check
+# nothing changes, runs side_effect.yml, then checks what they left on the host (verify.yml)
 dependency:
   name: galaxy
   options:
@@ -24,9 +24,12 @@ platforms:
     tmpfs:
       - /run
       - /run/lock
-    # the monitor server only resolves over Tailscale; same address as monitor_server_test_ip
+    # the monitor server only resolves over Tailscale; same address as monitor_server_test_ip.
+    # Grafana Cloud points at the container itself; same names as grafana_cloud_hosts
     etc_hosts:
       h1-finland-hub-monitor.crane-goldeye.ts.net: 100.64.0.10
+      logs-prod-042.grafana.net: 127.0.0.1
+      prometheus-prod-66-prod-us-east-3.grafana.net: 127.0.0.1
     networks:
       - name: genlayer-molecule
     groups:
@@ -42,6 +45,7 @@ ansible:
     VAULT_TOKEN: molecule-fake-token
   playbooks:
     prepare: ../shared/prepare.yml
+    side_effect: side_effect.yml
     cleanup: ../shared/cleanup.yml
 
 provisioner:
@@ -64,6 +68,7 @@ scenario:
     - prepare
     - converge
     - idempotence
+    - side_effect
     - verify
     - cleanup
     - destroy

@@ -8,6 +8,13 @@ fake_vault:
   container: genlayer-molecule-vault
   network: genlayer-molecule # must match the platform network in node/molecule.yml
 
+# Alloy's config pushes to Grafana Cloud. Every scenario points these names at the test host itself,
+# so nothing a test does reaches production; converge.yml checks every URL in the config resolves there.
+# must match etc_hosts in node/molecule.yml
+grafana_cloud_hosts:
+  - logs-prod-042.grafana.net
+  - prometheus-prod-66-prod-us-east-3.grafana.net
+
 # stands in for the monitor server, which only resolves over Tailscale.
 # must match etc_hosts in node/molecule.yml
 monitor_server_test_ip: 100.64.0.10
@@ -22,6 +29,9 @@ vault:
     zksync:
       rpc_url: http://127.0.0.1:8545
       ws_url: ws://127.0.0.1:8546
+  external:
+    testnet:
+      telemetry_password: molecule-fake-password
 
 # survey values, as Semaphore passes them on a real deploy
 fetch_vault_secrets: true

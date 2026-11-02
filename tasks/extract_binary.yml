@@ -1,32 +1,50 @@
 ---
-- name: Create a directory with specific permissions and ownership
-  ansible.builtin.file:
-    path: "{{ tmp_dir }}/{{ service_identifier }}"
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
+# With version_command and binary_version set, the download is skipped when that version is
+# already installed, so a deploy with nothing new changes nothing.
+- name: Get the installed version
+  ansible.builtin.command: "{{ version_command }}"
+  register: installed_binary_version
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  when: version_command is defined
 
-- name: Download and unarchive the binary
-  ansible.builtin.unarchive:
-    src: "{{ source_url }}/{{ suffix_url }}"
-    dest: "{{ tmp_dir }}/{{ service_identifier }}"
-    remote_src: true
-    owner: root
-    group: root
-    mode: "0755"
+- name: Install the binary
+  when: >-
+    version_command is not defined
+    or (installed_binary_version.stdout ~ installed_binary_version.stderr) is not search((binary_version | regex_escape) ~ '(\\s|$)')
+  block:
+    - name: Create a directory with specific permissions and ownership
+      ansible.builtin.file:
+        path: "{{ tmp_dir }}/{{ service_identifier }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
 
-- name: Copy the binary file
-  ansible.builtin.copy:
-    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ extracted_binary_path }}"
-    dest: "{{ binary_dest_path }}"
-    remote_src: true
-    owner: root
-    group: root
-    force: true
-    mode: "0755"
+    - name: Download and unarchive the binary
+      ansible.builtin.unarchive:
+        src: "{{ source_url }}/{{ suffix_url }}"
+        dest: "{{ tmp_dir }}/{{ service_identifier }}"
+        remote_src: true
+        owner: root
+        group: root
+        mode: "0755"
 
-- name: Clean up the temporary files in /tmp
-  ansible.builtin.file:
-    path: "{{ tmp_dir }}/{{ service_identifier }}"
-    state: absent
+    # a new binary only takes effect after a restart
+    - name: Copy the binary file
+      ansible.builtin.copy:
+        src: "{{ tmp_dir }}/{{ service_identifier }}/{{ extracted_binary_path }}"
+        dest: "{{ binary_dest_path }}"
+        remote_src: true
+        owner: root
+        group: root
+        force: true
+        mode: "0755"
+      notify:
+        - Restart service
+
+    - name: Clean up the temporary files in /tmp
+      ansible.builtin.file:
+        path: "{{ tmp_dir }}/{{ service_identifier }}"
+        state: absent

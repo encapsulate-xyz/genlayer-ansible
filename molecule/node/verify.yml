@@ -4,6 +4,7 @@
   gather_facts: false
   vars_files:
     - ../../group_vars/all.yml
+    - ../../group_vars/default.yml
     - ../../group_vars/{{ env }}.yml
     - ../shared/vars/fake_secrets.yml
   vars:
@@ -37,6 +38,7 @@
         - environment/{{ service_name }}.secrets.env
         - data/keystore/operator.json
         - log/{{ service_name }}.log
+        - data/genlayer.db/molecule-snapshot
       register: node_files
 
     - name: Check node file owners and modes
@@ -52,6 +54,8 @@
           environment/genlayer.secrets.env: [genlayer, "0600"]
           data/keystore/operator.json: [genlayer, "0600"]
           log/genlayer.log: [genlayer, "0644"]
+          # from the tiny snapshot side_effect.yml syncs
+          data/genlayer.db/molecule-snapshot: [genlayer, "0644"]
       loop: "{{ node_files.results }}"
       loop_control:
         label: "{{ item.item }}"
@@ -109,3 +113,114 @@
       vars:
         metrics_port: "{{ genlayer.validator.ports.metrics_port }}"
         admin_port: "{{ genlayer.validator.ports.admin_port }}"
+
+- name: Verify the Alloy setup
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - ../../group_vars/all.yml
+    - ../../group_vars/default.yml
+  vars:
+    alloy_name: genlayer-alloy
+    alloy_home_dir: /opt/genlayer-alloy
+  tasks:
+    - name: Get Alloy service state
+      ansible.builtin.systemd_service:
+        name: "{{ alloy_name }}"
+      register: alloy_state
+
+    - name: Check Alloy is enabled and running as the node user
+      ansible.builtin.assert:
+        that:
+          - alloy_state.status.UnitFileState == "enabled"
+          - alloy_state.status.ActiveState == "active"
+          - alloy_state.status.User == "genlayer"
+        fail_msg: "{{ alloy_name }} is {{ alloy_state.status.UnitFileState }}, {{ alloy_state.status.ActiveState }}, as {{ alloy_state.status.User }}"
+        quiet: true
+
+    - name: Get the Alloy version
+      ansible.builtin.command: "{{ alloy_home_dir }}/bin/{{ alloy_name }} --version"
+      register: alloy_version
+      changed_when: false
+
+    - name: Check the Alloy version
+      ansible.builtin.assert:
+        that: alloy_version.stdout is search(alloy.version | regex_escape ~ '\\s')
+        fail_msg: "Expected {{ alloy.version }}, got: {{ alloy_version.stdout }}"
+        quiet: true
+
+    # Grafana Cloud resolves to the test host, so the pushes fail but Alloy keeps running
+    - name: Check Alloy loaded its config
+      ansible.builtin.uri:
+        url: http://127.0.0.1:{{ alloy.ports.http_listen_port }}/-/ready
+      register: alloy_ready
+      until: alloy_ready.status == 200
+      delay: 5
+      retries: 6
+
+    - name: Get Alloy files
+      ansible.builtin.stat:
+        path: "{{ alloy_home_dir }}/{{ item }}"
+      loop:
+        - config/config.alloy
+        - data
+        - log
+        - log/{{ alloy_name }}.log
+      register: alloy_files
+
+    - name: Check Alloy file owners and modes
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - "[item.stat.pw_name, item.stat.gr_name, item.stat.mode] == expected[item.item]"
+        fail_msg: >-
+          {{ item.item }}: expected {{ expected[item.item] }},
+          got {{ [item.stat.pw_name, item.stat.gr_name, item.stat.mode] if item.stat.exists else 'no file' }}
+        quiet: true
+      vars:
+        # the data and log folders are group writable, as Alloy runs as the node user
+        expected:
+          config/config.alloy: [genlayer-alloy, genlayer, "0660"]
+          data: [genlayer-alloy, genlayer, "0775"]
+          log: [genlayer-alloy, genlayer, "0775"]
+          log/genlayer-alloy.log: [genlayer-alloy, genlayer, "0664"]
+      loop: "{{ alloy_files.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+- name: Verify the webdriver healthcheck setup
+  hosts: all
+  gather_facts: false
+  vars:
+    healthcheck_name: genlayer-webdriver-healthcheck
+  tasks:
+    - name: Get healthcheck timer state
+      ansible.builtin.systemd_service:
+        name: "{{ healthcheck_name }}.timer"
+      register: healthcheck_timer
+
+    - name: Check the healthcheck timer is enabled and running
+      ansible.builtin.assert:
+        that:
+          - healthcheck_timer.status.UnitFileState == "enabled"
+          - healthcheck_timer.status.ActiveState == "active"
+        fail_msg: "{{ healthcheck_name }}.timer is {{ healthcheck_timer.status.UnitFileState }}, {{ healthcheck_timer.status.ActiveState }}"
+        quiet: true
+
+    - name: Run the healthcheck once
+      ansible.builtin.systemd_service:
+        name: "{{ healthcheck_name }}.service"
+        state: started
+      changed_when: false
+
+    - name: Read the healthcheck log
+      ansible.builtin.slurp:
+        src: /opt/{{ healthcheck_name }}/log/{{ healthcheck_name }}.log
+      register: healthcheck_log
+
+    # no scenario installs the webdriver itself, so the healthcheck must leave it to systemd
+    - name: Check the healthcheck skips a webdriver that isn't running
+      ansible.builtin.assert:
+        that: healthcheck_log.content | b64decode is search('genlayer-webdriver is not active, skipping healthcheck')
+        fail_msg: "{{ (healthcheck_log.content | b64decode).splitlines()[-5:] }}"
+        quiet: true

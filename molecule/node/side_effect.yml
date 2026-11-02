@@ -1,0 +1,224 @@
+---
+# runs after the second-run check, with what changes the host on purpose and so can't be part of it:
+# the secret types genlayer doesn't use, the post-deploy check against stand-in services, a sync
+# from a tiny snapshot, and setup_node.yml again with the GenVM setup turned on.
+# each play removes what it added, so verify.yml sees the node as setup_node.yml left it
+- name: Fetch the secret types genlayer doesn't use
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - ../shared/vars/fake_secrets.yml
+  vars:
+    project: genlayer
+    service_identifier: genlayer
+    secret_dir: /tmp/molecule-secrets
+    fake_key: "{{ fake_vault_secrets | selectattr('path', 'eq', 'genlayer/molecule/key') | first }}"
+    fake_base64: "{{ fake_vault_secrets | selectattr('path', 'eq', 'genlayer/molecule/base64') | first }}"
+  tasks:
+    - name: Include common handlers
+      ansible.builtin.include_role:
+        name: common
+
+    - name: Create the secret directory
+      ansible.builtin.file:
+        path: "{{ secret_dir }}"
+        state: directory
+        mode: "0700"
+
+    - name: Fetch a key secret
+      ansible.builtin.include_tasks: ../../tasks/get_and_save_vault_secret.yml
+      vars:
+        vault_secret_source_path: "{{ fake_key.path }}"
+        secret_destination_path: "{{ secret_dir }}/key"
+        secret_type: key
+
+    - name: Fetch a base64 secret
+      ansible.builtin.include_tasks: ../../tasks/get_and_save_vault_secret.yml
+      vars:
+        vault_secret_source_path: "{{ fake_base64.path }}"
+        secret_destination_path: "{{ secret_dir }}/base64"
+        secret_type: base64
+
+    - name: Read the fetched secrets
+      ansible.builtin.slurp:
+        src: "{{ secret_dir }}/{{ item }}"
+      loop:
+        - key
+        - base64
+      register: fetched_secrets
+      no_log: true
+
+    # the assert shows which check failed, never the values
+    - name: Check the fetched secrets
+      ansible.builtin.assert:
+        that:
+          - fetched_secrets.results[0].content | b64decode == fake_key.data.key
+          - fetched_secrets.results[1].content | b64decode == fake_base64.data.key | b64decode
+        fail_msg: A secret file doesn't match what the fake Vault serves
+        quiet: true
+
+    - name: Remove the fetched secrets
+      ansible.builtin.file:
+        path: "{{ secret_dir }}"
+        state: absent
+
+- name: Run the post-deploy check against a healthy and a crash-looping service
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - ../../group_vars/all.yml
+    - ../../group_vars/{{ env }}.yml
+  vars:
+    project: genlayer
+    standin_dir: /tmp/molecule-standin
+    standin_port: 18080
+    # the post-deploy check reads the version from the real node binary
+    standin_version_command: /opt/genlayer/bin/genlayer version
+  tasks:
+    - name: Create the stand-in directory
+      ansible.builtin.file:
+        path: "{{ standin_dir }}"
+        state: directory
+        mode: "0755"
+
+    - name: Create the stand-in health page
+      ansible.builtin.copy:
+        content: "ok\n"
+        dest: "{{ standin_dir }}/health"
+        mode: "0644"
+
+    # restarts every 6s, like a node that crashes on start with the unit's RestartSec=4
+    - name: Start the stand-in services
+      ansible.builtin.command:
+        argv: >-
+          {{ ['systemd-run', '--collect', '--unit=' ~ item.name, '--property=StandardOutput=append:' ~ standin_dir ~ '/' ~ item.name ~ '.log',
+          '--property=StandardError=inherit'] + item.properties + item.command }}
+      loop:
+        - name: molecule-healthy
+          properties: []
+          command: [python3, -m, http.server, "{{ standin_port }}", --bind, 127.0.0.1, --directory, "{{ standin_dir }}"]
+        - name: molecule-crashing
+          properties: [--property=Restart=always, --property=RestartSec=4]
+          command: [/bin/sh, -c, echo starting; sleep 2; echo crashed; exit 1]
+      loop_control:
+        label: "{{ item.name }}"
+      changed_when: true
+
+    - name: Check a healthy service passes
+      ansible.builtin.include_tasks: ../../tasks/verify_service.yml
+      vars:
+        verify_service: true
+        type: validator
+        service_identifier: molecule-healthy
+        log_file_path: "{{ standin_dir }}/molecule-healthy.log"
+        health_url: http://127.0.0.1:{{ standin_port }}/health
+        version_command: "{{ standin_version_command }}"
+
+    - name: Check a crash-looping service fails the deploy
+      block:
+        - name: Run the post-deploy check on the crash-looping service
+          ansible.builtin.include_tasks: ../../tasks/verify_service.yml
+          vars:
+            verify_service: true
+            type: validator
+            service_identifier: molecule-crashing
+            log_file_path: "{{ standin_dir }}/molecule-crashing.log"
+            health_url: http://127.0.0.1:{{ standin_port }}/health
+
+        - name: Fail when the check passed
+          ansible.builtin.fail:
+            msg: The post-deploy check passed a crash-looping service
+      rescue:
+        - name: Check the deploy failed because of the crash loop
+          ansible.builtin.assert:
+            that: ansible_failed_result.msg is search('molecule-crashing is not healthy after the deploy')
+            fail_msg: "{{ ansible_failed_result.msg }}"
+            quiet: true
+
+    - name: Stop the stand-in services
+      ansible.builtin.systemd_service:
+        name: "{{ item }}"
+        state: stopped
+      loop:
+        - molecule-healthy
+        - molecule-crashing
+
+    - name: Remove the stand-in directory
+      ansible.builtin.file:
+        path: "{{ standin_dir }}"
+        state: absent
+
+- name: Serve a tiny snapshot from the test host
+  hosts: all
+  gather_facts: false
+  vars:
+    snapshot_dir: /tmp/molecule-snapshot
+  tasks:
+    - name: Create the snapshot directory
+      ansible.builtin.file:
+        path: "{{ snapshot_dir }}/content"
+        state: directory
+        mode: "0755"
+
+    # sync_node.yml treats a database with a CURRENT file as extracted; verify.yml looks for the marker
+    - name: Create the snapshot files
+      ansible.builtin.copy:
+        content: "{{ item.content }}"
+        dest: "{{ snapshot_dir }}/content/{{ item.name }}"
+        mode: "0644"
+      loop:
+        - name: CURRENT
+          content: "MANIFEST-000001\n"
+        - name: molecule-snapshot
+          content: "fake snapshot from molecule/node/side_effect.yml\n"
+      loop_control:
+        label: "{{ item.name }}"
+
+    # a zstd-compressed tar, like the real ones
+    - name: Pack the snapshot
+      community.general.archive:
+        path: "{{ snapshot_dir }}/content/*"
+        dest: "{{ snapshot_dir }}/snapshot.tar"
+        format: tar
+        mode: "0644"
+
+    - name: Compress the snapshot
+      ansible.builtin.command: zstd -q {{ snapshot_dir }}/snapshot.tar -o {{ snapshot_dir }}/snapshot.tar.zst
+      args:
+        creates: "{{ snapshot_dir }}/snapshot.tar.zst"
+
+    - name: Serve the snapshot
+      ansible.builtin.command: >-
+        systemd-run --collect --unit=molecule-snapshot
+        python3 -m http.server 18081 --bind 127.0.0.1 --directory {{ snapshot_dir }}
+      changed_when: true
+
+    - name: Wait for the snapshot server
+      ansible.builtin.wait_for:
+        host: 127.0.0.1
+        port: 18081
+        timeout: 30
+
+- name: Run sync_node.yml as Semaphore does, from the tiny snapshot
+  ansible.builtin.import_playbook: ../../sync_node.yml
+  vars:
+    snapshot_url: http://127.0.0.1:18081/snapshot.tar.zst
+
+- name: Stop serving the snapshot
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Stop the snapshot server
+      ansible.builtin.systemd_service:
+        name: molecule-snapshot
+        state: stopped
+
+    - name: Remove the snapshot
+      ansible.builtin.file:
+        path: /tmp/molecule-snapshot
+        state: absent
+
+- name: Run setup_node.yml again with the GenVM setup turned on, as the Semaphore survey can
+  ansible.builtin.import_playbook: ../../setup_node.yml
+  vars:
+    setup_genvm: true
