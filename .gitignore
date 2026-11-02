@@ -3,3 +3,5 @@
 /ansible_vault_password
 *.iml
 .vscode
+# roles from roles/requirements.yml, installed by Molecule or Semaphore
+/roles/morgangraphics.ansible-role-nvm/
