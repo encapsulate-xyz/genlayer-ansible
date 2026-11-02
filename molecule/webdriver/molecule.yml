@@ -5,8 +5,10 @@ dependency:
   name: galaxy
   options:
     requirements-file: ${MOLECULE_PROJECT_DIRECTORY}/collections/requirements.yml
-    # the webdriver role depends on the nvm role for Node.js
+    # the webdriver role depends on the nvm role for Node.js. It goes outside the repo, where
+    # Galaxy would otherwise put it, so the coverage check doesn't count its tasks as ours
     role-file: ${MOLECULE_PROJECT_DIRECTORY}/roles/requirements.yml
+    roles-path: ~/.ansible/roles
 
 driver:
   name: docker

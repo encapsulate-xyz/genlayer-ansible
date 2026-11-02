@@ -2,3 +2,7 @@
 # same as webdriver_host in inventory/testnet.yml
 env: testnet
 type: webdriver
+
+# the nvm role gives its folder to the user Ansible connects as. Semaphore connects as ansible,
+# the container connection as root, and only Semaphore says so in a variable
+ansible_user: root
