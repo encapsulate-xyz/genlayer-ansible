@@ -1,5 +1,5 @@
 ---
-# runs setup_node.yml and setup_alloy.yml on a fresh Ubuntu 24.04 container, runs them again to check
+# runs the validator host's playbooks on a fresh Ubuntu 24.04 container, runs them again to check
 # nothing changes, runs side_effect.yml, then checks what they left on the host (verify.yml)
 dependency:
   name: galaxy

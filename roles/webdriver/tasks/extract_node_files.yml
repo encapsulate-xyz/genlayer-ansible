@@ -1,5 +1,14 @@
 ---
+# The files come out of the image only when the version changes. Copying them on every run
+# changed their owners back and forth and restarted the webdriver on every deploy.
+- name: Get the installed version
+  ansible.builtin.slurp:
+    src: "{{ webdriver_version_file_path }}"
+  register: webdriver_installed_version
+  failed_when: false
+
 - name: Create docker container and copy node files
+  when: (webdriver_installed_version.content | default('') | b64decode | trim) != genlayer.webdriver.version | string
   vars:
     container_name: "{{ service_identifier }}"
   block:
@@ -91,6 +100,14 @@
         mode: "0755"
       notify:
         - Restart service
+
+    - name: Save the installed version
+      ansible.builtin.copy:
+        content: "{{ genlayer.webdriver.version }}\n"
+        dest: "{{ webdriver_version_file_path }}"
+        owner: root
+        group: root
+        mode: "0644"
 
   always:
     - name: Remove webdriver container

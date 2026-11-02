@@ -1,6 +1,7 @@
 # Ubuntu 24.04 with systemd and SSH, like our servers after server-setup-playbook.
-# sync_node.yml needs curl and zstd, which come with Ubuntu's server image, and Alloy needs unzip,
-# which server-setup-playbook installs; this image has none of them
+# curl, python3-debian (for apt repositories), python3-requests (for the Docker modules), wget (for the nvm
+# role) and zstd (for sync_node.yml) come with Ubuntu's server image, and unzip (for Alloy) with
+# server-setup-playbook; this image has none of them
 FROM {{ item.image }}
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -14,10 +15,13 @@ RUN apt-get update \
         openssh-server \
         python3 \
         python3-apt \
+        python3-debian \
+        python3-requests \
         sudo \
         systemd \
         systemd-sysv \
         unzip \
+        wget \
         zstd
 
 # the container runs privileged, so its systemd would otherwise reset the host's binfmt handlers

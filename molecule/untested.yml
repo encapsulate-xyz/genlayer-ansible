@@ -1,13 +1,8 @@
 ---
 # Tasks that no Molecule scenario runs, each with the reason. CI fails if a task neither runs in a
 # scenario nor is listed here, and if a listed task starts running, so keep this list current.
-
-# playbooks with no scenario yet
-- file: setup_webdriver.yml
-  reason: no scenario for the webdriver playbook yet; it needs Docker on the host
-- file: roles/webdriver/tasks/main.yml
-  reason: no scenario for the webdriver playbook yet
-- file: roles/webdriver/tasks/install_dependencies.yml
-  reason: no scenario for the webdriver playbook yet
-- file: roles/webdriver/tasks/extract_node_files.yml
-  reason: no scenario for the webdriver playbook yet
+#
+#   - file: tasks/example.yml
+#     task: Name of the task   (leave out to list the whole file)
+#     reason: why no scenario can run it
+[]

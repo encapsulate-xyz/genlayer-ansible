@@ -162,9 +162,9 @@ Pull requests run the playbooks with [Molecule](https://ansible.readthedocs.io/p
 
 ```
 molecule/
-  node/                 the playbooks in a fresh Ubuntu 24.04 container (runs in CI)
+  node/                 the validator host's playbooks in a fresh Ubuntu 24.04 container (runs in CI)
     molecule.yml          container, inventory and test steps
-    converge.yml          runs setup_node.yml, setup_alloy.yml and setup_webdriver_healthcheck.yml
+    converge.yml          runs setup_node.yml and setup_alloy.yml
     side_effect.yml       runs what changes the host on purpose: sync_node.yml from a tiny snapshot,
                           the post-deploy check against stand-in services, setup_node.yml with GenVM
     verify.yml            checks what they left on the host: services, files, secrets, config, firewall
@@ -174,6 +174,11 @@ molecule/
     prepare.yml           allows ssh in ufw, points Grafana Cloud at the server, starts a fake Vault
     cleanup.yml           removes what the test installed, and resets ufw
     host_vars/server.yml  reads the server from MOLECULE_SERVER and MOLECULE_SERVER_KEY
+  webdriver/            the webdriver host's playbooks in a container with Docker inside (runs in CI)
+    molecule.yml          container, inventory and test steps
+    converge.yml          runs setup_webdriver.yml and setup_webdriver_healthcheck.yml
+    verify.yml            checks the webdriver renders a page and the healthcheck passes
+    host_vars/            the test host, same as webdriver_host in inventory/testnet.yml
   shared/
     Dockerfile.j2         Ubuntu 24.04 with systemd and SSH, like our servers
     group_vars/all.yml    fake values for group_vars/vault.yml, and test settings

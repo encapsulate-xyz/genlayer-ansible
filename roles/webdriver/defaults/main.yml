@@ -17,3 +17,5 @@ webdriver_directories:
 webdriver_log_file_path: "{{ webdriver_log_dir }}/{{ service_identifier }}.log"
 
 webdriver_environment_general_file_path: "{{ webdriver_env_dir }}/{{ webdriver_environment_general_file_name }}"
+
+webdriver_version_file_path: "{{ webdriver_home_dir }}/{{ webdriver_version_file_name }}"

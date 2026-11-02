@@ -42,9 +42,3 @@
 
 - name: Run setup_alloy.yml as Semaphore does
   ansible.builtin.import_playbook: ../../setup_alloy.yml
-
-# inventory/testnet.yml runs the webdriver on the validator's server, as a second host of type webdriver
-- name: Run setup_webdriver_healthcheck.yml for the webdriver on the same host
-  ansible.builtin.import_playbook: ../../setup_webdriver_healthcheck.yml
-  vars:
-    type: webdriver

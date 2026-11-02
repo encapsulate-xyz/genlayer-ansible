@@ -1,0 +1,79 @@
+---
+- name: Verify the webdriver setup
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - ../../group_vars/all.yml
+    - ../../group_vars/{{ env }}.yml
+  vars:
+    service_name: genlayer-webdriver
+    healthcheck_name: genlayer-webdriver-healthcheck
+  tasks:
+    - name: Get webdriver service state
+      ansible.builtin.systemd_service:
+        name: "{{ service_name }}"
+      register: webdriver_state
+
+    - name: Check the webdriver is enabled and running as its own user
+      ansible.builtin.assert:
+        that:
+          - webdriver_state.status.UnitFileState == "enabled"
+          - webdriver_state.status.ActiveState == "active"
+          - webdriver_state.status.User == service_name
+        fail_msg: >-
+          {{ service_name }} is {{ webdriver_state.status.UnitFileState }}, {{ webdriver_state.status.ActiveState }},
+          as {{ webdriver_state.status.User }}
+        quiet: true
+
+    - name: Read the installed version
+      ansible.builtin.slurp:
+        src: /opt/{{ service_name }}/version
+      register: webdriver_version
+
+    - name: Check the installed version
+      ansible.builtin.assert:
+        that: webdriver_version.content | b64decode | trim == genlayer.webdriver.version | string
+        fail_msg: "Expected {{ genlayer.webdriver.version }}, got {{ webdriver_version.content | b64decode | trim }}"
+        quiet: true
+
+    # the same request the healthcheck makes: Chromium has to load and render a real page
+    - name: Check the webdriver renders a page
+      ansible.builtin.uri:
+        url: >-
+          http://127.0.0.1:{{ genlayer.webdriver.ports.listen_port }}/healthcheck?mode=text&url={{
+          genlayer.webdriver.healthcheck_target_url | urlencode }}
+        timeout: 30
+      register: webdriver_render
+      until: webdriver_render.status == 200
+      delay: 10
+      retries: 12
+
+    - name: Get healthcheck timer state
+      ansible.builtin.systemd_service:
+        name: "{{ healthcheck_name }}.timer"
+      register: healthcheck_timer
+
+    - name: Check the healthcheck timer is enabled and running
+      ansible.builtin.assert:
+        that:
+          - healthcheck_timer.status.UnitFileState == "enabled"
+          - healthcheck_timer.status.ActiveState == "active"
+        fail_msg: "{{ healthcheck_name }}.timer is {{ healthcheck_timer.status.UnitFileState }}, {{ healthcheck_timer.status.ActiveState }}"
+        quiet: true
+
+    - name: Run the healthcheck once
+      ansible.builtin.systemd_service:
+        name: "{{ healthcheck_name }}.service"
+        state: started
+      changed_when: false
+
+    - name: Read the healthcheck log
+      ansible.builtin.slurp:
+        src: /opt/{{ healthcheck_name }}/log/{{ healthcheck_name }}.log
+      register: healthcheck_log
+
+    - name: Check the healthcheck passed
+      ansible.builtin.assert:
+        that: (healthcheck_log.content | b64decode).splitlines()[-1] is search('healthcheck ok')
+        fail_msg: "{{ (healthcheck_log.content | b64decode).splitlines()[-5:] }}"
+        quiet: true

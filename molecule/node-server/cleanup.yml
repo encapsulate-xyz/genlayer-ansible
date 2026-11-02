@@ -8,7 +8,6 @@
     service_names:
       - genlayer
       - genlayer-alloy
-      - genlayer-webdriver-healthcheck
   tasks:
     # a fresh server has none of these units, so a missing one is fine
     - name: Stop and disable the services
@@ -16,7 +15,7 @@
         name: "{{ item }}"
         state: stopped
         enabled: false
-      loop: "{{ service_names + ['genlayer-webdriver-healthcheck.timer'] }}"
+      loop: "{{ service_names }}"
       register: service_stop
       failed_when: (service_stop.failed | default(false)) and service_stop.msg is not search('Could not find the requested service')
 
@@ -40,11 +39,8 @@
       loop:
         - /etc/systemd/system/genlayer.service
         - /etc/systemd/system/genlayer-alloy.service
-        - /etc/systemd/system/genlayer-webdriver-healthcheck.service
-        - /etc/systemd/system/genlayer-webdriver-healthcheck.timer
         - /opt/genlayer
         - /opt/genlayer-alloy
-        - /opt/genlayer-webdriver-healthcheck
         - /tmp/genlayer
         - /tmp/genlayer-alloy
         - /tmp/molecule-vault

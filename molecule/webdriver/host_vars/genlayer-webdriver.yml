@@ -1,0 +1,8 @@
+---
+# same as webdriver_host in inventory/testnet.yml
+env: testnet
+type: webdriver
+
+# the nvm role makes ansible_user the owner of its folder. Nothing in this repo sets it
+# (remote_user in ansible.cfg doesn't), and the container connection is root
+ansible_user: root
