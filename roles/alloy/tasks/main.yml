@@ -4,7 +4,6 @@
   vars:
     home: "{{ alloy_home_dir }}"
     directories: "{{ alloy_directories }}"
-    log_file_path: "{{ alloy_log_file_path }}"
 
 - name: Include Download, Unarchive and Copy Binary task
   ansible.builtin.include_tasks: tasks/extract_binary.yml
@@ -13,6 +12,8 @@
     suffix_url: "{{ alloy_default_binary_name }}.{{ alloy.file_extension }}"
     binary_dest_path: "{{ alloy_bin_dir }}/{{ service_identifier }}"
     extracted_binary_path: "{{ alloy_default_binary_name }}"
+    binary_version: "{{ alloy.version }}"
+    version_command: "{{ alloy_bin_dir }}/{{ service_identifier }} --version"
 
 - name: Set permissions for alloy data and log directories
   ansible.builtin.file:
@@ -32,6 +33,8 @@
     owner: "{{ service_identifier }}"
     group: "{{ project }}"
     mode: "0664"
+    modification_time: preserve
+    access_time: preserve
 
 - name: Copy alloy config
   ansible.builtin.template:

@@ -32,3 +32,4 @@
     mode: "0644"
     modification_time: preserve
     access_time: preserve
+  when: log_file_path is defined
