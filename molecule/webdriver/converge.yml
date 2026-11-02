@@ -1,0 +1,6 @@
+---
+- name: Run setup_webdriver.yml as Semaphore does
+  ansible.builtin.import_playbook: ../../setup_webdriver.yml
+
+- name: Run setup_webdriver_healthcheck.yml as Semaphore does
+  ansible.builtin.import_playbook: ../../setup_webdriver_healthcheck.yml

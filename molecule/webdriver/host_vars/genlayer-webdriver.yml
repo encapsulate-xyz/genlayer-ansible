@@ -1,0 +1,4 @@
+---
+# same as webdriver_host in inventory/testnet.yml
+env: testnet
+type: webdriver

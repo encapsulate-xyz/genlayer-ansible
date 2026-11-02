@@ -1,6 +1,6 @@
 ---
-# runs setup_node.yml on a fresh Ubuntu 24.04 container, runs it again to check nothing changes,
-# then checks what it left on the host (verify.yml)
+# runs the validator host's playbooks on a fresh Ubuntu 24.04 container, runs them again to check
+# nothing changes, runs side_effect.yml, then checks what they left on the host (verify.yml)
 dependency:
   name: galaxy
   options:

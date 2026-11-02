@@ -1,0 +1,64 @@
+---
+# runs setup_webdriver.yml and setup_webdriver_healthcheck.yml on a fresh Ubuntu 24.04 container,
+# runs them again to check nothing changes, then checks the webdriver renders a page (verify.yml)
+dependency:
+  name: galaxy
+  options:
+    requirements-file: ${MOLECULE_PROJECT_DIRECTORY}/collections/requirements.yml
+    # the webdriver role depends on the nvm role for Node.js
+    role-file: ${MOLECULE_PROJECT_DIRECTORY}/roles/requirements.yml
+
+driver:
+  name: docker
+
+platforms:
+  - name: genlayer-webdriver
+    image: ubuntu:24.04
+    # our servers are amd64, and the role installs Docker from its amd64 repository
+    platform: linux/amd64
+    dockerfile: ../shared/Dockerfile.j2
+    pre_build_image: false
+    command: /lib/systemd/systemd
+    privileged: true
+    cgroupns_mode: host
+    # the role runs Docker on the host, and Docker can't keep its images on the container's own
+    # overlay filesystem, so both stores get a volume; destroy removes them
+    volumes:
+      - /sys/fs/cgroup:/sys/fs/cgroup:rw
+      - /var/lib/containerd
+      - /var/lib/docker
+    keep_volumes: false
+    tmpfs:
+      - /run
+      - /run/lock
+    groups:
+      - genlayer
+
+ansible:
+  cfg:
+    defaults:
+      # same as ansible.cfg
+      hash_behaviour: merge
+      interpreter_python: /usr/bin/python3
+
+provisioner:
+  name: ansible
+  inventory:
+    links:
+      group_vars: ../shared/group_vars/
+      host_vars: host_vars/
+
+verifier:
+  name: ansible
+
+scenario:
+  # no Vault here: the webdriver playbooks fetch no secrets
+  test_sequence:
+    - dependency
+    - destroy
+    - syntax
+    - create
+    - converge
+    - idempotence
+    - verify
+    - destroy
