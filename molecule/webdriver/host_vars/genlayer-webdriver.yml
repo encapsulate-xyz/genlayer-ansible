@@ -3,6 +3,6 @@
 env: testnet
 type: webdriver
 
-# the nvm role gives its folder to the user Ansible connects as. Semaphore connects as ansible,
-# the container connection as root, and only Semaphore says so in a variable
+# the nvm role makes ansible_user the owner of its folder. Nothing in this repo sets it
+# (remote_user in ansible.cfg doesn't), and the container connection is root
 ansible_user: root
