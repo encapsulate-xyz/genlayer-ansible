@@ -3,6 +3,9 @@
 
 webdriver_environment_general_file_name: "{{ service_identifier }}.env"
 
+# written after the files are copied out of the image, so the next run can skip it
+webdriver_version_file_name: version
+
 webdriver_missing_libraries:
   - libopenh264.so.7
   - libdouble-conversion.so.3
