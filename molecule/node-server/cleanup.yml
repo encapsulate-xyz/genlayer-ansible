@@ -3,46 +3,68 @@
   hosts: all
   gather_facts: false
   vars:
-    service_name: genlayer
+    project: genlayer
+    # what converge.yml installs, each with a user of the same name
+    service_names:
+      - genlayer
+      - genlayer-alloy
+      - genlayer-webdriver-healthcheck
   tasks:
-    # a fresh server has neither unit, so a missing one is fine
-    - name: Stop the node
+    # a fresh server has none of these units, so a missing one is fine
+    - name: Stop and disable the services
       ansible.builtin.systemd_service:
-        name: "{{ service_name }}"
+        name: "{{ item }}"
         state: stopped
         enabled: false
-      register: node_stop
-      failed_when: (node_stop.failed | default(false)) and node_stop.msg is not search('Could not find the requested service')
+      loop: "{{ service_names + ['genlayer-webdriver-healthcheck.timer'] }}"
+      register: service_stop
+      failed_when: (service_stop.failed | default(false)) and service_stop.msg is not search('Could not find the requested service')
 
-    - name: Stop the fake Vault
+    # started by prepare.yml and side_effect.yml with systemd-run, so there is nothing to disable
+    - name: Stop the test services
       ansible.builtin.systemd_service:
-        name: molecule-vault
+        name: "{{ item }}"
         state: stopped
-      register: vault_stop
-      failed_when: (vault_stop.failed | default(false)) and vault_stop.msg is not search('Could not find the requested service')
+      loop:
+        - molecule-vault
+        - molecule-healthy
+        - molecule-crashing
+        - molecule-snapshot
+      register: test_service_stop
+      failed_when: (test_service_stop.failed | default(false)) and test_service_stop.msg is not search('Could not find the requested service')
 
-    - name: Remove node and Vault files
+    - name: Remove the service and test files
       ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       loop:
-        - /etc/systemd/system/{{ service_name }}.service
-        - /opt/{{ service_name }}
-        - /tmp/{{ service_name }}
+        - /etc/systemd/system/genlayer.service
+        - /etc/systemd/system/genlayer-alloy.service
+        - /etc/systemd/system/genlayer-webdriver-healthcheck.service
+        - /etc/systemd/system/genlayer-webdriver-healthcheck.timer
+        - /opt/genlayer
+        - /opt/genlayer-alloy
+        - /opt/genlayer-webdriver-healthcheck
+        - /tmp/genlayer
+        - /tmp/genlayer-alloy
         - /tmp/molecule-vault
+        - /tmp/molecule-secrets
+        - /tmp/molecule-standin
+        - /tmp/molecule-snapshot
 
     - name: Reload systemd
       ansible.builtin.systemd_service:
         daemon_reload: true
 
-    - name: Remove the node user
+    - name: Remove the service users
       ansible.builtin.user:
-        name: "{{ service_name }}"
+        name: "{{ item }}"
         state: absent
+      loop: "{{ service_names }}"
 
-    - name: Remove the node group
+    - name: Remove the project group
       ansible.builtin.group:
-        name: "{{ service_name }}"
+        name: "{{ project }}"
         state: absent
 
     - name: Remove the monitor server name
@@ -50,6 +72,13 @@
         path: /etc/hosts
         regexp: '\sh1-finland-hub-monitor\.crane-goldeye\.ts\.net$'
         state: absent
+
+    - name: Remove the Grafana Cloud names
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '\s{{ item | regex_escape }}$'
+        state: absent
+      loop: "{{ grafana_cloud_hosts }}"
 
     # back to inactive with no rules, as the test servers start
     - name: Reset ufw

@@ -158,19 +158,21 @@ ok: [validator.genlayer.testnet.encapsulate.xyz]
 
 ## Testing
 
-Pull requests run `setup_node.yml` with [Molecule](https://ansible.readthedocs.io/projects/molecule/) in CI (the shared `molecule` job in `encapsulate-xyz/.github`). The playbook runs unchanged, against fake secrets.
+Pull requests run the playbooks with [Molecule](https://ansible.readthedocs.io/projects/molecule/) in CI (the shared `molecule` job in `encapsulate-xyz/.github`). The playbook runs unchanged, against fake secrets.
 
 ```
 molecule/
-  node/                 setup_node.yml in a fresh Ubuntu 24.04 container (runs in CI)
+  node/                 the playbooks in a fresh Ubuntu 24.04 container (runs in CI)
     molecule.yml          container, inventory and test steps
-    converge.yml          runs setup_node.yml
-    verify.yml            checks what it left on the host: service, files, secrets, config, firewall
+    converge.yml          runs setup_node.yml, setup_alloy.yml and setup_webdriver_healthcheck.yml
+    side_effect.yml       runs what changes the host on purpose: sync_node.yml from a tiny snapshot,
+                          the post-deploy check against stand-in services, setup_node.yml with GenVM
+    verify.yml            checks what they left on the host: services, files, secrets, config, firewall
     host_vars/            the test host, same as the validator in inventory/testnet.yml
-  node-server/          the same converge.yml and verify.yml on a real throwaway server (run locally)
+  node-server/          the same converge.yml, side_effect.yml and verify.yml on a real throwaway server (run locally)
     molecule.yml
-    prepare.yml           allows ssh in ufw, then starts a fake Vault on the server
-    cleanup.yml           removes the node and the fake Vault, and resets ufw
+    prepare.yml           allows ssh in ufw, points Grafana Cloud at the server, starts a fake Vault
+    cleanup.yml           removes what the test installed, and resets ufw
     host_vars/server.yml  reads the server from MOLECULE_SERVER and MOLECULE_SERVER_KEY
   shared/
     Dockerfile.j2         Ubuntu 24.04 with systemd and SSH, like our servers
@@ -181,7 +183,7 @@ molecule/
   untested.yml          tasks no scenario runs, each with a reason
 ```
 
-Each test runs the playbook twice; the second run must change nothing, so a deploy with no changes never restarts the node. CI also fails if a task neither runs in a scenario nor is listed in `molecule/untested.yml`.
+Each test runs converge.yml twice; the second run must change nothing, so a deploy with no changes never restarts a service. Alloy's config sends to Grafana Cloud, so every scenario points those names at the test host, and converge.yml stops before deploying if a name in the config resolves anywhere else. CI also fails if a task neither runs in a scenario nor is listed in `molecule/untested.yml`.
 
 To run a scenario yourself, install the versions CI uses and stub the encrypted vault as CI does:
 

@@ -1,3 +1,47 @@
 ---
+# Alloy's config pushes to Grafana Cloud. Stop before deploying anything if a host in it would
+# reach the real one from the test host.
+- name: Check Alloy can't reach Grafana Cloud from the test host
+  hosts: all
+  gather_facts: false
+  vars:
+    alloy_config_hosts: >-
+      {{ lookup('ansible.builtin.file', playbook_dir ~ '/../../roles/alloy/templates/' ~ env ~ '/config.alloy.j2')
+      | regex_findall('https?://([^/:"]+)') | unique }}
+  tasks:
+    # a config that builds its URLs from variables would slip past the check below
+    - name: Check the Alloy config has URLs to check
+      ansible.builtin.assert:
+        that: alloy_config_hosts | length > 0
+        fail_msg: Found no URLs in the Alloy config; update the check in converge.yml
+        quiet: true
+
+    - name: Resolve the hosts in the Alloy config
+      ansible.builtin.command: getent hosts {{ item }}
+      loop: "{{ alloy_config_hosts }}"
+      register: alloy_config_resolved
+      changed_when: false
+      failed_when: false
+
+    - name: Check every host in the Alloy config resolves to the test host itself
+      ansible.builtin.assert:
+        that: alloy_unredirected_hosts | length == 0
+        fail_msg: >-
+          {{ alloy_unredirected_hosts }} would reach the real Grafana Cloud. Add them to grafana_cloud_hosts
+          in shared/group_vars/all.yml and to etc_hosts in node/molecule.yml
+        quiet: true
+      vars:
+        alloy_unredirected_hosts: >-
+          {{ alloy_config_resolved.results | rejectattr('stdout', 'match', '127\.0\.0\.1\s') | map(attribute='item') | list }}
+
 - name: Run setup_node.yml as Semaphore does
   ansible.builtin.import_playbook: ../../setup_node.yml
+
+- name: Run setup_alloy.yml as Semaphore does
+  ansible.builtin.import_playbook: ../../setup_alloy.yml
+
+# inventory/testnet.yml runs the webdriver on the validator's server, as a second host of type webdriver
+- name: Run setup_webdriver_healthcheck.yml for the webdriver on the same host
+  ansible.builtin.import_playbook: ../../setup_webdriver_healthcheck.yml
+  vars:
+    type: webdriver
