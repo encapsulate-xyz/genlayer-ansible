@@ -32,7 +32,8 @@
   notify:
     - Restart service
 
-- name: Copy the genvm related folder
+# no mode: the tree mixes executables and data files, so it keeps the modes from the release tarball
+- name: Copy the genvm related folder # noqa: risky-file-permissions
   vars:
     binary_subpath: "genlayer-node-linux-amd64"
   ansible.builtin.copy:
@@ -63,8 +64,8 @@
   ansible.builtin.command: python3 {{ node_genvm_dir }}/bin/setup.py
   args:
     chdir: "{{ node_home_dir }}"
-  register: genvm_setup_result
-  changed_when: genvm_setup_result.rc == 0
+  register: node_genvm_setup_result
+  changed_when: node_genvm_setup_result.rc == 0
   when: setup_genvm | default(false) | bool
 
 - name: Set ownership for genvm directory

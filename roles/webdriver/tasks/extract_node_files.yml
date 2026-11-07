@@ -15,11 +15,11 @@
         docker cp {{ container_name }}:/src/prj/. {{ webdriver_bin_dir }}/
       args:
         executable: /bin/bash
-      register: copy_result
-      changed_when: copy_result.rc == 0
+      register: webdriver_copy_result
+      changed_when: webdriver_copy_result.rc == 0
       failed_when:
-        - copy_result.rc != 0
-        - "'No such container' in copy_result.stderr"
+        - webdriver_copy_result.rc != 0
+        - "'No such container' in webdriver_copy_result.stderr"
       notify:
         - Restart service
 
@@ -28,11 +28,11 @@
         docker cp {{ container_name }}:/usr/bin/chromium {{ webdriver_bin_dir }}/chromium
       args:
         executable: /bin/bash
-      register: copy_result
-      changed_when: copy_result.rc == 0
+      register: webdriver_copy_result
+      changed_when: webdriver_copy_result.rc == 0
       failed_when:
-        - copy_result.rc != 0
-        - "'No such container' in copy_result.stderr"
+        - webdriver_copy_result.rc != 0
+        - "'No such container' in webdriver_copy_result.stderr"
       notify:
         - Restart service
 
@@ -41,11 +41,11 @@
         docker cp -L {{ container_name }}:/etc/chromium.d/. {{ webdriver_lib_dir }}/chromium.d/
       args:
         executable: /bin/bash
-      register: copy_result
-      changed_when: copy_result.rc == 0
+      register: webdriver_copy_result
+      changed_when: webdriver_copy_result.rc == 0
       failed_when:
-        - copy_result.rc != 0
-        - "'No such container' in copy_result.stderr"
+        - webdriver_copy_result.rc != 0
+        - "'No such container' in webdriver_copy_result.stderr"
       notify:
         - Restart service
 
@@ -54,11 +54,11 @@
         docker cp -L {{ container_name }}:/usr/lib/chromium/. {{ webdriver_lib_dir }}/chromium/
       args:
         executable: /bin/bash
-      register: copy_result
-      changed_when: copy_result.rc == 0
+      register: webdriver_copy_result
+      changed_when: webdriver_copy_result.rc == 0
       failed_when:
-        - copy_result.rc != 0
-        - "'No such container' in copy_result.stderr"
+        - webdriver_copy_result.rc != 0
+        - "'No such container' in webdriver_copy_result.stderr"
       notify:
         - Restart service
 
@@ -68,11 +68,11 @@
       args:
         executable: /bin/bash
       loop: "{{ webdriver_missing_libraries }}"
-      register: copy_result
-      changed_when: copy_result.rc == 0
+      register: webdriver_copy_result
+      changed_when: webdriver_copy_result.rc == 0
       failed_when:
-        - copy_result.rc != 0
-        - "'No such container' in copy_result.stderr"
+        - webdriver_copy_result.rc != 0
+        - "'No such container' in webdriver_copy_result.stderr"
       notify:
         - Restart service
 
@@ -103,13 +103,13 @@
     path: "{{ item }}"
     regexp: '/etc/chromium.d'
     replace: '{{ webdriver_lib_dir }}/chromium.d'
-  loop: 
-    - "{{ webdriver_bin_dir }}/chromium"    
+  loop:
+    - "{{ webdriver_bin_dir }}/chromium"
 
 - name: Update Chromium libs path in files
   ansible.builtin.replace:
     path: "{{ item }}"
     regexp: '/usr/lib'
     replace: '{{ webdriver_lib_dir }}'
-  loop: 
-    - "{{ webdriver_bin_dir }}/chromium" 
+  loop:
+    - "{{ webdriver_bin_dir }}/chromium"
