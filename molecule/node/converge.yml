@@ -1,0 +1,3 @@
+---
+- name: Run setup_node.yml as Semaphore does
+  ansible.builtin.import_playbook: ../../setup_node.yml

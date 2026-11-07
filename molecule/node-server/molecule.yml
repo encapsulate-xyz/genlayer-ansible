@@ -1,0 +1,63 @@
+---
+# runs the node scenario's converge.yml and verify.yml on a real throwaway server instead of a container,
+# so the test also covers our server baseline and the real kernel firewall.
+# point it at a server with MOLECULE_SERVER and MOLECULE_SERVER_KEY (see host_vars/server.yml)
+dependency:
+  name: galaxy
+  options:
+    requirements-file: ${MOLECULE_PROJECT_DIRECTORY}/collections/requirements.yml
+
+driver:
+  name: default
+  options:
+    managed: false
+
+platforms:
+  - name: server
+    groups:
+      - genlayer
+
+ansible:
+  cfg:
+    defaults:
+      # same as ansible.cfg
+      hash_behaviour: merge
+      interpreter_python: /usr/bin/python3
+      host_key_checking: true
+  env:
+    VAULT_TOKEN: molecule-fake-token
+  executor:
+    args:
+      ansible_playbook:
+        # group_vars/all.yml sets our servers' ssh port, and the playbook loads it above inventory vars
+        - --extra-vars=ansible_port=22
+  playbooks:
+    prepare: prepare.yml
+    converge: ../node/converge.yml
+    verify: ../node/verify.yml
+    cleanup: cleanup.yml
+
+provisioner:
+  name: ansible
+  inventory:
+    links:
+      group_vars: ../shared/group_vars/
+      host_vars: host_vars/
+
+verifier:
+  name: ansible
+
+scenario:
+  # destroy has no playbook here; it only resets Molecule's saved state, so a stopped run
+  # can't leave prepare marked as done
+  test_sequence:
+    - dependency
+    - cleanup
+    - destroy
+    - syntax
+    - prepare
+    - converge
+    - idempotence
+    - verify
+    - cleanup
+    - destroy

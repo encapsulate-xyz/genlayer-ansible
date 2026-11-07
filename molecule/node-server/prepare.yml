@@ -1,0 +1,92 @@
+---
+- name: Prepare the server
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - ../shared/vars/fake_secrets.yml
+  vars:
+    vault_dir: /tmp/molecule-vault
+    vault_exec_env:
+      VAULT_ADDR: http://127.0.0.1:8200
+      VAULT_TOKEN: "{{ lookup('env', 'VAULT_TOKEN') }}"
+  tasks:
+    # the playbook enables ufw with incoming denied; our servers allow ssh over Tailscale, a test server doesn't
+    - name: Install ufw
+      ansible.builtin.apt:
+        name: ufw
+        state: present
+        update_cache: true
+
+    - name: Allow ssh before the playbook enables ufw
+      community.general.ufw:
+        rule: allow
+        port: "22"
+        proto: tcp
+        comment: molecule ssh
+
+    - name: Check the ssh rule is in place
+      ansible.builtin.command: ufw show added
+      register: ufw_added
+      changed_when: false
+      failed_when: "'ufw allow 22/tcp' not in ufw_added.stdout"
+
+    - name: Map the monitor server name
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '\sh1-finland-hub-monitor\.crane-goldeye\.ts\.net$'
+        line: "{{ monitor_server_test_ip }} h1-finland-hub-monitor.crane-goldeye.ts.net"
+
+    - name: Install unzip
+      ansible.builtin.apt:
+        name: unzip
+        state: present
+
+    - name: Create the Vault directory
+      ansible.builtin.file:
+        path: "{{ vault_dir }}"
+        state: directory
+        mode: "0700"
+
+    - name: Download Vault
+      ansible.builtin.get_url:
+        url: "https://releases.hashicorp.com/vault/{{ fake_vault_version }}/vault_{{ fake_vault_version }}_linux_amd64.zip"
+        dest: "{{ vault_dir }}/vault.zip"
+        checksum: "sha256:https://releases.hashicorp.com/vault/{{ fake_vault_version }}/vault_{{ fake_vault_version }}_SHA256SUMS"
+        mode: "0600"
+
+    - name: Unpack Vault
+      ansible.builtin.unarchive:
+        src: "{{ vault_dir }}/vault.zip"
+        dest: "{{ vault_dir }}"
+        remote_src: true
+
+    - name: Start Vault in dev mode
+      ansible.builtin.command: >-
+        systemd-run --unit=molecule-vault {{ vault_dir }}/vault server -dev
+        -dev-root-token-id={{ lookup('env', 'VAULT_TOKEN') }} -dev-listen-address=127.0.0.1:8200
+      changed_when: true
+
+    - name: Wait for Vault
+      ansible.builtin.command: "{{ vault_dir }}/vault status"
+      environment: "{{ vault_exec_env }}"
+      register: vault_status
+      until: vault_status.rc == 0
+      retries: 10
+      delay: 2
+      changed_when: false
+
+    - name: Enable the KV engine
+      ansible.builtin.command:
+        argv: ["{{ vault_dir }}/vault", secrets, enable, "-path={{ fake_vault_mount }}", kv-v2]
+      environment: "{{ vault_exec_env }}"
+      changed_when: true
+
+    - name: Write the fake secrets
+      ansible.builtin.command:
+        argv: ["{{ vault_dir }}/vault", kv, put, "{{ fake_vault_mount }}/{{ item.path }}", "-"]
+        stdin: "{{ item.data | to_json }}"
+      environment: "{{ vault_exec_env }}"
+      loop: "{{ fake_vault_secrets }}"
+      loop_control:
+        label: "{{ item.path }}"
+      changed_when: true

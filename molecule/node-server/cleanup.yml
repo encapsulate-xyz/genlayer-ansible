@@ -1,0 +1,57 @@
+---
+- name: Return the server to how it was before the test
+  hosts: all
+  gather_facts: false
+  vars:
+    service_name: genlayer
+  tasks:
+    # a fresh server has neither unit, so a missing one is fine
+    - name: Stop the node
+      ansible.builtin.systemd_service:
+        name: "{{ service_name }}"
+        state: stopped
+        enabled: false
+      register: node_stop
+      failed_when: (node_stop.failed | default(false)) and node_stop.msg is not search('Could not find the requested service')
+
+    - name: Stop the fake Vault
+      ansible.builtin.systemd_service:
+        name: molecule-vault
+        state: stopped
+      register: vault_stop
+      failed_when: (vault_stop.failed | default(false)) and vault_stop.msg is not search('Could not find the requested service')
+
+    - name: Remove node and Vault files
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - /etc/systemd/system/{{ service_name }}.service
+        - /opt/{{ service_name }}
+        - /tmp/{{ service_name }}
+        - /tmp/molecule-vault
+
+    - name: Reload systemd
+      ansible.builtin.systemd_service:
+        daemon_reload: true
+
+    - name: Remove the node user
+      ansible.builtin.user:
+        name: "{{ service_name }}"
+        state: absent
+
+    - name: Remove the node group
+      ansible.builtin.group:
+        name: "{{ service_name }}"
+        state: absent
+
+    - name: Remove the monitor server name
+      ansible.builtin.lineinfile:
+        path: /etc/hosts
+        regexp: '\sh1-finland-hub-monitor\.crane-goldeye\.ts\.net$'
+        state: absent
+
+    # back to inactive with no rules, as the test servers start
+    - name: Reset ufw
+      ansible.builtin.command: ufw --force reset
+      changed_when: true

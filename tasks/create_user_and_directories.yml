@@ -32,3 +32,5 @@
     owner: "{{ service_identifier }}"
     group: "{{ project }}"
     mode: "0644"
+    modification_time: preserve
+    access_time: preserve

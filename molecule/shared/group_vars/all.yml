@@ -1,0 +1,31 @@
+---
+# test values for every scenario. CI replaces the encrypted group_vars/vault.yml with an empty stub,
+# so the fake values below stand in for it.
+
+fake_vault_version: 2.1.2
+fake_vault:
+  image: "hashicorp/vault:{{ fake_vault_version }}"
+  container: genlayer-molecule-vault
+  network: genlayer-molecule # must match the platform network in node/molecule.yml
+
+# stands in for the monitor server, which only resolves over Tailscale.
+# must match etc_hosts in node/molecule.yml
+monitor_server_test_ip: 100.64.0.10
+
+# same structure as group_vars/vault.yml
+vault:
+  default:
+    hcp:
+      vault:
+        url: "http://{{ fake_vault.container }}:8200"
+  testnet:
+    zksync:
+      rpc_url: http://127.0.0.1:8545
+      ws_url: ws://127.0.0.1:8546
+
+# survey values, as Semaphore passes them on a real deploy
+fetch_vault_secrets: true
+setup_genvm: false
+
+# a node with fake keys and RPC never becomes healthy, so the post-deploy check is listed in untested.yml
+verify_service: false

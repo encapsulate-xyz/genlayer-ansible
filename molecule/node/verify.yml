@@ -1,0 +1,111 @@
+---
+- name: Verify the node setup
+  hosts: all
+  gather_facts: false
+  vars_files:
+    - ../../group_vars/all.yml
+    - ../../group_vars/{{ env }}.yml
+    - ../shared/vars/fake_secrets.yml
+  vars:
+    service_name: genlayer
+    home_dir: /opt/genlayer
+    fake_env_secret: "{{ fake_vault_secrets | selectattr('path', 'search', 'secrets.env$') | first }}"
+    fake_operator_key: "{{ fake_vault_secrets | selectattr('path', 'search', 'operator.json$') | first }}"
+  tasks:
+    - name: Get service state
+      ansible.builtin.systemd_service:
+        name: "{{ service_name }}"
+      register: service_state
+
+    - name: Check the service is installed and enabled
+      ansible.builtin.assert:
+        that:
+          - service_state.status.FragmentPath == "/etc/systemd/system/" ~ service_name ~ ".service"
+          - service_state.status.UnitFileState == "enabled"
+          - service_state.status.User == service_name
+        quiet: true
+
+    - name: Check the unit file
+      ansible.builtin.command: systemd-analyze verify /etc/systemd/system/{{ service_name }}.service
+      changed_when: false
+
+    - name: Get node files
+      ansible.builtin.stat:
+        path: "{{ home_dir }}/{{ item }}"
+      loop:
+        - bin/{{ service_name }}
+        - environment/{{ service_name }}.secrets.env
+        - data/keystore/operator.json
+        - log/{{ service_name }}.log
+      register: node_files
+
+    - name: Check node file owners and modes
+      ansible.builtin.assert:
+        that:
+          - item.stat.exists
+          - "[item.stat.pw_name, item.stat.mode] == expected[item.item]"
+        fail_msg: "{{ item.item }}: expected {{ expected[item.item] }}, got {{ [item.stat.pw_name, item.stat.mode] if item.stat.exists else 'no file' }}"
+        quiet: true
+      vars:
+        expected:
+          bin/genlayer: [root, "0755"]
+          environment/genlayer.secrets.env: [genlayer, "0600"]
+          data/keystore/operator.json: [genlayer, "0600"]
+          log/genlayer.log: [genlayer, "0644"]
+      loop: "{{ node_files.results }}"
+      loop_control:
+        label: "{{ item.item }}"
+
+    - name: Read node config
+      ansible.builtin.slurp:
+        src: "{{ home_dir }}/config/config.yaml"
+      register: node_config_file
+
+    - name: Check node config
+      ansible.builtin.assert:
+        that:
+          - node_config.rollup.genlayerchainrpcurl == vault.testnet.zksync.rpc_url
+          - node_config.rollup.genlayerchainwebsocketurl == vault.testnet.zksync.ws_url
+          - node_config.consensus.consensusaddress == genlayer.consensus_contract_address
+          - node_config.consensus.chainid | string == genlayer.chain_id | string
+          - node_config.consensus.genesis == genlayer.genesis
+        quiet: true
+      vars:
+        node_config: "{{ node_config_file.content | b64decode | from_yaml }}"
+
+    - name: Read secrets fetched from Vault
+      ansible.builtin.slurp:
+        src: "{{ home_dir }}/{{ item }}"
+      loop:
+        - environment/{{ service_name }}.secrets.env
+        - data/keystore/operator.json
+      register: secret_files
+      no_log: true
+
+    # the assert shows which check failed, never the values
+    - name: Check secrets fetched from Vault
+      ansible.builtin.assert:
+        that:
+          - env_lines | sort == fake_env_secret.data.items() | map('join', '=') | sort
+          - secret_files.results[1].content | b64decode | from_json == fake_operator_key.data
+        fail_msg: A secret file doesn't match what the fake Vault serves
+        quiet: true
+      vars:
+        env_lines: "{{ (secret_files.results[0].content | b64decode).splitlines() | select | list }}"
+
+    - name: Read firewall rules
+      ansible.builtin.command: ufw status
+      register: ufw_status
+      changed_when: false
+
+    - name: Check firewall rules
+      ansible.builtin.assert:
+        that:
+          - "ufw_status.stdout is search('Status: active')"
+          - ufw_status.stdout is search(metrics_port ~ '/tcp\s+ALLOW\s+' ~ (monitor_server_test_ip | regex_escape))
+          - ufw_status.stdout is not search(admin_port ~ '/tcp')
+        fail_msg: "{{ ufw_status.stdout_lines }}"
+        quiet: true
+      vars:
+        metrics_port: "{{ genlayer.validator.ports.metrics_port }}"
+        admin_port: "{{ genlayer.validator.ports.admin_port }}"

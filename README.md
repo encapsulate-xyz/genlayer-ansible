@@ -9,6 +9,7 @@ This Ansible playbook automates the deployment and configuration of Genlayer Nod
 - [Setup](#setup)
 - [Variables](#variables)
 - [Usage](#usage)
+- [Testing](#testing)
 
 ## Requirements
 
@@ -154,3 +155,45 @@ Pausing for 20 seconds
 (ctrl+C then 'C' = continue early, ctrl+C then 'A' = abort)
 ok: [validator.genlayer.testnet.encapsulate.xyz]
 ```
+
+## Testing
+
+Pull requests run `setup_node.yml` with [Molecule](https://ansible.readthedocs.io/projects/molecule/) in CI (the shared `molecule` job in `encapsulate-xyz/.github`). The playbook runs unchanged, against fake secrets.
+
+```
+molecule/
+  node/                 setup_node.yml in a fresh Ubuntu 24.04 container (runs in CI)
+    molecule.yml          container, inventory and test steps
+    converge.yml          runs setup_node.yml
+    verify.yml            checks what it left on the host: service, files, secrets, config, firewall
+    host_vars/            the test host, same as the validator in inventory/testnet.yml
+  node-server/          the same converge.yml and verify.yml on a real throwaway server (run locally)
+    molecule.yml
+    prepare.yml           allows ssh in ufw, then starts a fake Vault on the server
+    cleanup.yml           removes the node and the fake Vault, and resets ufw
+    host_vars/server.yml  reads the server from MOLECULE_SERVER and MOLECULE_SERVER_KEY
+  shared/
+    Dockerfile.j2         Ubuntu 24.04 with systemd and SSH, like our servers
+    group_vars/all.yml    fake values for group_vars/vault.yml, and test settings
+    vars/fake_secrets.yml what the fake HCP Vault serves
+    prepare.yml           starts the fake HCP Vault container
+    cleanup.yml           removes it
+  untested.yml          tasks no scenario runs, each with a reason
+```
+
+Each test runs the playbook twice; the second run must change nothing, so a deploy with no changes never restarts the node. CI also fails if a task neither runs in a scenario nor is listed in `molecule/untested.yml`.
+
+To run a scenario yourself, install the versions CI uses and stub the encrypted vault as CI does:
+
+```bash
+pip install ansible==11.13.0 molecule==26.10.0 "molecule-plugins[docker]==26.10.12" docker==7.2.0
+printf -- '---\n{}\n' > group_vars/vault.yml
+
+molecule test -s node
+
+MOLECULE_SERVER=<address> MOLECULE_SERVER_KEY=<private key path> molecule test -s node-server
+
+git checkout group_vars/vault.yml
+```
+
+`node-server` deploys a real node to the server, so only point it at a throwaway server you can reach as root over SSH.

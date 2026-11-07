@@ -1,54 +1,69 @@
 ---
-- name: Create a temporary directory
-  ansible.builtin.file:
-    path: "{{ tmp_dir }}/{{ service_identifier }}"
-    state: directory
-    owner: root
-    group: root
-    mode: "0755"
+# The release tarball ships its own genvm-module-llm.yaml, so copying it again on every run puts the
+# default back over ours and restarts the node twice. Install only when the version changes.
+# The binary prints its version to stderr.
+- name: Get the installed version
+  ansible.builtin.command: "{{ node_bin_dir }}/{{ service_identifier }} version"
+  register: node_installed_version
+  changed_when: false
+  failed_when: false
+  check_mode: false
 
-- name: Download and unarchive
-  vars:
-    archive_name: "genlayer-node-linux-amd64-{{ genlayer.validator.version }}.tar.gz"
-    prefix_url: "{{ system_architecture }}/{{ genlayer.validator.version }}/{{ archive_name }}"
-  ansible.builtin.unarchive:
-    src: "{{ genlayer.source_url }}/{{ prefix_url }}"
-    dest: "{{ tmp_dir }}/{{ service_identifier }}"
-    remote_src: true
-    owner: root
-    group: root
+- name: Install the release
+  when: >-
+    (node_installed_version.stdout ~ node_installed_version.stderr)
+    is not search('^Version:\\s+' ~ genlayer.validator.version | regex_escape ~ '$', multiline=True)
+  block:
+    - name: Create a temporary directory
+      ansible.builtin.file:
+        path: "{{ tmp_dir }}/{{ service_identifier }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
 
-- name: Copy the binary file
-  vars:
-    binary_subpath: "genlayer-node-linux-amd64/bin"
-  ansible.builtin.copy:
-    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/{{ node_service_default_binary_name }}"
-    dest: "{{ node_bin_dir }}/{{ service_identifier }}"
-    remote_src: true
-    owner: root
-    group: root
-    force: true
-    mode: "0755"
-  notify:
-    - Restart service
+    - name: Download and unarchive
+      vars:
+        archive_name: "genlayer-node-linux-amd64-{{ genlayer.validator.version }}.tar.gz"
+        prefix_url: "{{ system_architecture }}/{{ genlayer.validator.version }}/{{ archive_name }}"
+      ansible.builtin.unarchive:
+        src: "{{ genlayer.source_url }}/{{ prefix_url }}"
+        dest: "{{ tmp_dir }}/{{ service_identifier }}"
+        remote_src: true
+        owner: root
+        group: root
 
-- name: Copy the genvm related folder
-  vars:
-    binary_subpath: "genlayer-node-linux-amd64"
-  ansible.builtin.copy:
-    src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/opt/genvm"
-    dest: "{{ node_home_dir }}"
-    remote_src: true
-    owner: "{{ service_identifier }}"
-    group: "{{ project }}"
-    force: true
-  notify:
-    - Restart service
+    - name: Copy the binary file
+      vars:
+        binary_subpath: "genlayer-node-linux-amd64/bin"
+      ansible.builtin.copy:
+        src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/{{ node_service_default_binary_name }}"
+        dest: "{{ node_bin_dir }}/{{ service_identifier }}"
+        remote_src: true
+        owner: root
+        group: root
+        force: true
+        mode: "0755"
+      notify:
+        - Restart service
 
-- name: Clean up the temporary files in /tmp
-  ansible.builtin.file:
-    path: "{{ tmp_dir }}/{{ service_identifier }}"
-    state: absent
+    - name: Copy the genvm related folder
+      vars:
+        binary_subpath: "genlayer-node-linux-amd64"
+      ansible.builtin.copy:
+        src: "{{ tmp_dir }}/{{ service_identifier }}/{{ binary_subpath }}/opt/genvm"
+        dest: "{{ node_home_dir }}"
+        remote_src: true
+        owner: "{{ service_identifier }}"
+        group: "{{ project }}"
+        force: true
+      notify:
+        - Restart service
+
+    - name: Clean up the temporary files in /tmp
+      ansible.builtin.file:
+        path: "{{ tmp_dir }}/{{ service_identifier }}"
+        state: absent
 
 - name: Install Dependencies
   ansible.builtin.apt:

@@ -7,4 +7,7 @@ on:
 
 jobs:
   ansible:
-    uses: encapsulate-xyz/.github/.github/workflows/ansible-ci.yml@main
+    # back to @main once encapsulate-xyz/.github feat/molecule is merged
+    uses: encapsulate-xyz/.github/.github/workflows/ansible-ci.yml@feat/molecule
+    with:
+      ci-ref: feat/molecule

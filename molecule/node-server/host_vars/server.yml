@@ -1,0 +1,19 @@
+---
+# the server comes from the environment, so no address or key is committed:
+#   MOLECULE_SERVER       address of a throwaway Ubuntu server you can ssh into as root
+#   MOLECULE_SERVER_KEY   path to the private key for it
+ansible_host: "{{ lookup('env', 'MOLECULE_SERVER') }}"
+ansible_user: root
+ansible_ssh_private_key_file: "{{ lookup('env', 'MOLECULE_SERVER_KEY') }}"
+ansible_ssh_extra_args: -o IdentitiesOnly=yes
+
+# same as the validator host in inventory/testnet.yml
+env: testnet
+type: validator
+
+# the fake Vault runs on the server itself
+vault:
+  default:
+    hcp:
+      vault:
+        url: http://127.0.0.1:8200
