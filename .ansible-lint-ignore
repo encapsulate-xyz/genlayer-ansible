@@ -1,5 +1,1 @@
 # This file contains ignores rule violations for ansible-lint
-roles/node/tasks/extract_binaries.yml risky-file-permissions
-roles/node/tasks/extract_binaries.yml var-naming[no-role-prefix]
-roles/webdriver/tasks/extract_node_files.yml var-naming[no-role-prefix]
-roles/webdriver/tasks/extract_node_files.yml yaml[trailing-spaces]
