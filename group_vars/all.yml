@@ -35,7 +35,7 @@ genlayer:
     source_url: yeagerai/genlayer-genvm-webdriver
     healthcheck_target_url: https://test-server.genlayer.com/static/genvm/hello.html
     ports:
-      listen_port: 4444
+      listen_port: 4443
   llm:
     ports:
       listen_port: 3031

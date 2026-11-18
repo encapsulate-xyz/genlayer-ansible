@@ -48,6 +48,16 @@
   notify:
     - Restart service
 
+- name: Copy web configuration file
+  ansible.builtin.template:
+    src: "{{ env }}/genvm-module-web.yaml.j2"
+    dest: "{{ node_web_config_file_path }}"
+    owner: "{{ service_identifier }}"
+    group: "{{ project }}"
+    mode: "0644"
+  notify:
+    - Restart service
+
 - name: Fetch secrets from HCP Vault and save to files
   when: fetch_vault_secrets | default(false) | bool
   block:

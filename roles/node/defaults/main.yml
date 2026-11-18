@@ -37,3 +37,4 @@ node_protocol_manifest_file_path: "{{ node_config_dir }}/{{ node_protocol_manife
 # release tarball ships genvm under opt/genvm/<version> with a `current` symlink
 node_genvm_dir: "{{ node_home_dir }}/genvm/current"
 node_llm_config_file_path: "{{ node_genvm_dir }}/config/{{ node_llm_config_file_name }}"
+node_web_config_file_path: "{{ node_genvm_dir }}/config/{{ node_web_config_file_name }}"
