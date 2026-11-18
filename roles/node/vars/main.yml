@@ -4,6 +4,7 @@
 # config file names
 node_config_file_name: config.yaml
 node_llm_config_file_name: genvm-module-llm.yaml
+node_web_config_file_name: genvm-module-web.yaml
 node_protocol_manifest_file_name: protocol-manifest.json
 
 # binary names

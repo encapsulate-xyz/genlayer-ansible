@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/genlayerlabs/genvm/refs/tags/v0.6.0-rc2/docs/schemas/default-config.json#/web
+bind_address: 127.0.0.1:{{ genlayer.web.ports.listen_port }}
+webdriver_host: http://127.0.0.1:{{ genlayer.webdriver.ports.listen_port }}
+
+lua_script_path: {{ node_genvm_dir }}/config/genvm-web-default.lua
+vm_count: 6
+lua_path: {{ node_genvm_dir }}/lib/genvm-lua/?.lua
+data_dir: {{ node_genvm_dir }}/data
+signer_url: '#{signerUrl}'
+signer_headers: {}
+
+threads: 4
+blocking_threads: 16
+log_disable: ''
+#log_level: trace
+
+extra_tld: []
+always_allow_hosts: []
