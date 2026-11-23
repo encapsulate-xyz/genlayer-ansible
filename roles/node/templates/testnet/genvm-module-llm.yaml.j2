@@ -126,6 +126,16 @@ backends:
         supports_json: true
         supports_image: false
 
+  pearl:
+    enabled: true
+    host: https://inference.pearlresearch.ai
+    provider: openai-compatible
+    key: ${ENV[PEARLKEY]}
+    models:
+      deepseek-ai/DeepSeek-V4.1-Flash-1017:
+        supports_json: true
+        supports_image: false
+
   libertai:
     enabled: false
     host: https://api.libertai.io
