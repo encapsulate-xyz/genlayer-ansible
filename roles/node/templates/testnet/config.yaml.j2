@@ -24,6 +24,9 @@ node:
   mode: "validator"
   validatorWalletAddress: "{{ genlayer.validator_address }}"
   operatorAddress: "{{ genlayer.operator_address }}"
+{% if network is defined %}
+  network: "{{ network }}"
+{% endif %}
   admin:
     port: {{ genlayer.validator.ports.admin_port }}
   rpc:

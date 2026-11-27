@@ -87,6 +87,7 @@ This playbook allows customization through several variables. You can define the
 
 - **`group_vars/all.yml`**: Contains all the source urls and configurations.
 - **`group_vars/mainnet.yml`** or **`group_vars/testnet.yml`**: Contains version-specific variables.
+  `testnet.yml` is Bradbury, **`group_vars/clarke.yml`** is Clarke (see [Clarke testnet](#clarke-testnet)).
 - **`group_vars/vault.yml`**: Store secret variables, such as `jwtsecret`, in this file.
 
 ### Usage
@@ -118,6 +119,30 @@ This playbook allows customization through several variables. You can define the
   ansible-playbook setup_webdriver.yml -l webdriver_host -i inventory/testnet.yml
   ansible-playbook setup_genvm_web.yml -l web_host -i inventory/testnet.yml
   ```
+
+### Clarke testnet
+
+Clarke is a second testnet next to Bradbury. It needs its own server: both use the same ports.
+
+`inventory/clarke.yml` sets `env: clarke`, which loads `group_vars/clarke.yml`. Clarke has its own `templates/clarke`
+folders, copied from `templates/testnet`, so a change meant for both networks goes into both. `node.network` is written
+into the node config only for hosts that set `network: clarke`.
+
+Service, user and `/opt` directory names end with `-clarke`, for example `genlayer-clarke` and
+`genlayer-webdriver-clarke`. The webdriver healthcheck is `genlayer-webdriver-health-clarke`.
+
+1. Set the server in `inventory/clarke.yml`.
+2. Set `validator_address` and `operator_address` in `group_vars/clarke.yml`.
+3. Deploy, always with `-i`:
+
+  ```bash
+  ansible-playbook setup_node.yml -i inventory/clarke.yml
+  ansible-playbook setup_webdriver.yml -i inventory/clarke.yml
+  ```
+
+`fetch_vault_secrets=true` reads from the `clarke` HashiCorp Vault mount:
+`genlayer/encapsulate/validator/genlayer-clarke.secrets.env` and `genlayer/encapsulate/clarke/operator.json`. Don't run
+`sync_node.yml` for Clarke, no snapshot is configured and the node syncs from genesis.
 
 After you run the playbook, it will ask for confirmation, displaying all the variables and the IP address or DNS of the server you are going to deploy.
 
