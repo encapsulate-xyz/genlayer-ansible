@@ -32,6 +32,31 @@
   notify:
     - Restart service
 
+- name: Read the GenVM version of the release
+  ansible.builtin.stat:
+    path: "{{ tmp_dir }}/{{ service_identifier }}/genlayer-node-linux-amd64/opt/genvm/current"
+  register: node_genvm_release
+
+- name: Read the installed GenVM version
+  ansible.builtin.stat:
+    path: "{{ node_genvm_dir }}"
+  register: node_genvm_installed
+
+- name: Check whether the GenVM version changes
+  ansible.builtin.set_fact:
+    node_genvm_changed: >-
+      {{ node_genvm_installed.stat.lnk_target | default('') | basename
+      != node_genvm_release.stat.lnk_target | basename }}
+
+# the copy below writes through an existing `current` link, which would put the new GenVM in the old version's folder
+- name: Remove the old GenVM
+  ansible.builtin.file:
+    path: "{{ node_genvm_dir | dirname }}"
+    state: absent
+  when: node_genvm_changed | bool
+  notify:
+    - Restart service
+
 # no mode: the tree mixes executables and data files, so it keeps the modes from the release tarball
 - name: Copy the genvm related folder # noqa: risky-file-permissions
   vars:
@@ -66,7 +91,7 @@
     chdir: "{{ node_home_dir }}"
   register: node_genvm_setup_result
   changed_when: node_genvm_setup_result.rc == 0
-  when: setup_genvm | default(false) | bool
+  when: setup_genvm | default(false) | bool or node_genvm_changed | bool
 
 - name: Set ownership for genvm directory
   ansible.builtin.file:

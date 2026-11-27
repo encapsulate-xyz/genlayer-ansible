@@ -7,6 +7,10 @@
   ansible.builtin.include_tasks: tasks/apply_ufw_rules.yml
   loop: "{{ node_ufw_rules }}"
 
+- name: Include reset data task
+  ansible.builtin.include_tasks: reset_data.yml
+  when: reset_node_data | default(false) | bool
+
 - name: Include user creation task
   ansible.builtin.include_tasks: tasks/create_user_and_directories.yml
   vars:
