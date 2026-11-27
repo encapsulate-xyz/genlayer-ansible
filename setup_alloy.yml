@@ -15,8 +15,8 @@
   tasks:
     - name: Set service_identifier
       ansible.builtin.set_fact:
-        service_identifier: "{{ project }}-{{ alloy.service_identifier_suffix }}"
-        alloy_service_user: "{{ project }}"
+        service_identifier: "{{ project }}-{{ alloy.service_identifier_suffix }}{{ '-clarke' if env == 'clarke' else '' }}"
+        alloy_service_user: "{{ project }}{{ '-clarke' if env == 'clarke' else '' }}"
 
     - name: Include common handlers
       ansible.builtin.include_role:

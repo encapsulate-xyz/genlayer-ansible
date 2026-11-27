@@ -1,0 +1,14 @@
+---
+# maintains versions and can overwrite all.yml
+genlayer:
+  consensus_contract_address: "0xA79dA7c238905fD0F10298cD579B0733ad1B1d0E"
+  genesis: 713692
+  chain_id: 4221
+  rollup_provider: conduit
+  protocol_manifest_url: https://docs.genlayer.com/validators/clarke.protocol-manifest.json
+  validator_address: "0xa80B99e79CD5bE707e15304C8bCDDF5292Ec7727"
+  operator_address: "0x0b81c2e9017667b1fcf1e1714580b8df17c3f79a"
+  validator:
+    version: v0.6.1
+  webdriver:
+    version: 0.0.12

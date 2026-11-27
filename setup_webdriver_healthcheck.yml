@@ -8,7 +8,7 @@
   vars_files:
     - group_vars/all.yml
     - group_vars/default.yml
-    - group_vars/{{ env }}.yml
+    - group_vars/{{ network | default(env) }}.yml
 
   pre_tasks:
     - name: Setup environment
@@ -24,7 +24,10 @@
         - name: Set service_identifier
           ansible.builtin.set_fact:
             webdriver_service_identifier: "{{ service_identifier }}"
-            service_identifier: "{{ service_identifier }}-healthcheck"
+            # -clarke stays last, and "health" is shortened there because Linux user names stop at 32 characters
+            service_identifier: >-
+              {{ service_identifier | regex_replace('-clarke$', '') ~ '-health-clarke' if env == 'clarke'
+              else service_identifier ~ '-healthcheck' }}
         - name: Include common handlers
           ansible.builtin.include_role:
             name: common

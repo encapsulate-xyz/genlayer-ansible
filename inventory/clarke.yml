@@ -1,0 +1,17 @@
+---
+# maintains Clarke testnet inventory grouped by project names
+# env stays testnet (templates and secrets), network picks group_vars/<network>.yml
+# network is set per host, so it can't reach the Bradbury hosts when the whole inventory folder is loaded
+all:
+  vars:
+    env: clarke
+  children:
+    genlayer:
+      hosts:
+        ts.validator.genlayer.clarke.encapsulate.xyz:
+        95.217.4.193:
+          type: validator
+          network: clarke
+        webdriver_host:
+          ansible_host: ts.validator.genlayer.clarke.encapsulate.xyz
+          type: webdriver
