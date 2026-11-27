@@ -1,0 +1,16 @@
+---
+# for an upgrade to a new consensus deployment, which cannot reuse the old databases
+- name: Stop the node before deleting its databases
+  ansible.builtin.systemd:
+    name: "{{ service_identifier }}"
+    state: stopped
+  notify:
+    - Restart service
+
+- name: Delete the node databases
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ node_database_paths }}"
+  notify:
+    - Restart service

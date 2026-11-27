@@ -105,6 +105,12 @@ This playbook allows customization through several variables. You can define the
   ansible-playbook setup_node.yml -l validator.genlayer.testnet.encapsulate.xyz -i inventory/testnet.yml
   ```
 
+   Optional flags for `setup_node.yml`:
+
+   - `-e reset_node_data=true` stops the node and deletes its databases (the keystore and logs stay). Use it once, for an
+     upgrade to a new consensus deployment such as Bradbury Phase 3. The node then resyncs from genesis.
+   - `-e setup_genvm=true` runs the GenVM setup script again. It already runs when the GenVM version changes.
+
 4. Similarly to deploy other services
 
   ```bash

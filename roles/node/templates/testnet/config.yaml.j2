@@ -47,11 +47,14 @@ genvm:
   root_dir: "{{ node_genvm_dir }}"
   start_manager: true
   manager_url: http://127.0.0.1:{{ genlayer.manager.ports.listen_port }}
-  # permits: 32
-  # sync_permits: 256
-  # sync_wait_timeout: "20s"
+  # upper limits, the node lowers them to what the host holds
+  permits: 24
+  sync_permits: 64
+  sync_wait_timeout: "20s"
   # sync_wait_poll_interval: "100ms"
   replay:
+    scheduler: "lanes"
+    # the keys below apply under scheduler "block" only
     parallel_enabled: false
     workers: 4
     consensus_reserve_permits: 2

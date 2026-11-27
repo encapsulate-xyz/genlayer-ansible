@@ -24,6 +24,13 @@ node_directories:
   - "{{ node_merkle_forest_dir }}"
   - "{{ node_merkle_tree_dir }}"
 
+# removed by reset_node_data, the keystore and logs stay
+node_database_paths:
+  - "{{ node_data_dir }}/genvm.db"
+  - "{{ node_data_dir }}/ops.db"
+  - "{{ node_data_dir }}/genlayer.db" # node v0.5
+  - "{{ node_merkle_dir }}"
+
 node_config_file_path: "{{ node_config_dir }}/{{ node_config_file_name }}"
 
 node_log_file_path: "{{ node_log_dir }}/{{ service_identifier }}.log"
